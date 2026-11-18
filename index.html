@@ -1,591 +1,521 @@
-html
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VN-Style Text Scroller</title>
-  <link href="https://googleapis.com" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #121214;
-      color: #f1f1f1;
-      font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    header {
-      background: #1c1c21;
-      padding: 10px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #2e2e36;
-    }
-    header h1 { font-size: 16px; color: #ffcc00; }
-    .btn {
-      background: #2b2b34;
-      color: #fff;
-      border: 1px solid #3f3f4c;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      font-family: inherit;
-    }
-    .btn:active { opacity: 0.8; }
-    .btn-primary { background: #ffcc00; color: #000; font-weight: 700; border: none; }
-    .btn-danger { background: #e63946; border: none; }
-
-    .preview-area {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #09090b;
-      padding: 12px;
-    }
-    canvas {
-      background: #111827;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.8);
-      max-width: 100%;
-      max-height: 42vh;
-      border: 1px solid #333;
-    }
-
-    .timeline-panel {
-      width: 100%;
-      background: #18181c;
-      border-top: 1px solid #2e2e36;
-      border-bottom: 1px solid #2e2e36;
-      padding: 12px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .timeline-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .keyframe-actions { display: flex; gap: 6px; align-items: center; }
-    .timeline-track-container {
-      position: relative;
-      height: 55px;
-      background: #101013;
-      border: 1px solid #2d2d36;
-      border-radius: 6px;
-      cursor: pointer;
-      user-select: none;
-      touch-action: none;
-    }
-    .timeline-clip {
-      position: absolute;
-      top: 10px;
-      left: 0;
-      right: 0;
-      height: 35px;
-      background: #2b4c7e;
-      border-radius: 4px;
-      border: 1px solid #4a7bc7;
-    }
-    .playhead {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #ffcc00;
-      z-index: 10;
-      pointer-events: none;
-    }
-    .playhead::before {
-      content: '';
-      position: absolute;
-      top: -4px;
-      left: -5px;
-      width: 12px;
-      height: 12px;
-      background: #ffcc00;
-      border-radius: 50%;
-    }
-    .kf-marker {
-      position: absolute;
-      top: 21px;
-      width: 14px;
-      height: 14px;
-      background: #ff4d4d;
-      border: 2px solid #fff;
-      transform: translateX(-50%) rotate(45deg);
-      z-index: 5;
-      cursor: pointer;
-    }
-    .kf-marker.active { background: #00e676; transform: translateX(-50%) rotate(45deg) scale(1.25); }
-
-    .sidebar {
-      width: 100%;
-      background: #18181c;
-      padding: 15px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 12px;
-    }
-    .control-group {
-      background: #212127;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #2c2c35;
-    }
-    .control-group h3 {
-      font-size: 13px;
-      color: #ffcc00;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      background: #121215;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 6px;
-      padding: 8px;
-      font-family: inherit;
-      font-size: 14px;
-    }
-    label { display: block; font-size: 12px; margin-top: 8px; color: #ccc; }
-    input[type="range"], select, input[type="color"], input[type="number"] {
-      width: 100%;
-      margin-top: 4px;
-      background: #121215;
-      color: #fff;
-      border: 1px solid #333;
-      padding: 6px;
-      border-radius: 4px;
-    }
-    .row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-    .row > * { flex: 1; }
-    #exportStatus { font-size: 12px; color: #ffcc00; margin-right: 8px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VN Style Text Animation Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#101014;--panel:#1a1a21;--panel2:#22222b;--line:#343440;--gold:#ffcc00;--muted:#a5a5b2;--blue:#315b91;--blue2:#4b83c8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#f5f5f7;font-family:Poppins,"Hind Siliguri",sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#19191f;border-bottom:1px solid var(--line)}
+h1{font-size:16px;margin:0;color:var(--gold)}
+.header-actions{display:flex;align-items:center;gap:9px}
+.btn{border:1px solid #454552;background:#2a2a34;color:#fff;padding:9px 12px;border-radius:7px;font-size:12px;cursor:pointer}
+.btn:hover{filter:brightness(1.15)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:var(--gold);color:#111;border-color:var(--gold);font-weight:700}
+.danger{background:#b92f3a;border-color:#b92f3a}
+.status{font-size:11px;color:var(--gold)}
+main{max-width:1500px;margin:auto}
+.preview-area{background:#08080b;padding:16px;display:flex;flex-direction:column;align-items:center;gap:9px}
+canvas{display:block;max-width:100%;max-height:48vh;width:auto;height:auto;background:#111827;border:1px solid #3a3a43;box-shadow:0 8px 28px #0009}
+.preview-hint{font-size:11px;color:var(--muted)}
+.timeline-panel{background:var(--panel);padding:13px 16px;border-block:1px solid var(--line)}
+.timeline-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:11px}
+.timeline-top-left,.timeline-top-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#timeDisplay{font-size:12px;color:#ddd;font-variant-numeric:tabular-nums}
+.track-wrap{position:relative;padding:10px 0 4px}
+.ruler{height:16px;position:relative;color:#888;font-size:9px}
+.ruler span{position:absolute;transform:translateX(-50%)}
+.timeline-track{height:54px;position:relative;background:#101015;border:1px solid #363642;border-radius:7px;touch-action:pan-y;user-select:none;overflow:visible}
+.timeline-clip{position:absolute;left:0;right:0;top:9px;height:34px;border:1px solid var(--blue2);background:linear-gradient(90deg,#29466d,#315b91);border-radius:4px;pointer-events:none}
+.playhead{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--gold);z-index:8;pointer-events:none}
+.playhead:before{content:"";position:absolute;top:-2px;left:-5px;width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.kf-marker{position:absolute;top:19px;width:15px;height:15px;background:#f04c55;border:2px solid white;transform:translate(-50%,-50%) rotate(45deg);z-index:10;cursor:grab;touch-action:none}
+.kf-marker.active{background:#00d982;outline:2px solid #00d98255;transform:translate(-50%,-50%) rotate(45deg) scale(1.2)}
+.kf-marker.dragging{cursor:grabbing}
+.kf-legend{display:flex;gap:14px;font-size:10px;color:var(--muted);margin-top:8px}
+.dot{display:inline-block;width:8px;height:8px;transform:rotate(45deg);margin-right:5px;background:#f04c55}.dot.active{background:#00d982}
+.editor-grid{display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:12px;padding:14px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px;min-width:0}
+.group h2{font-size:13px;color:var(--gold);margin:0 0 11px}
+label{display:block;font-size:11px;color:#c8c8d0;margin:9px 0 5px}
+textarea,select,input[type=number],input[type=text]{width:100%;background:#111116;color:#fff;border:1px solid #41414d;border-radius:6px;padding:8px;font-size:12px}
+textarea{height:112px;resize:vertical;font-family:inherit;line-height:1.5}
+input[type=range]{width:100%;accent-color:var(--gold)}
+input[type=color]{width:100%;height:34px;padding:2px;background:#111116;border:1px solid #41414d;border-radius:6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.value-line{display:flex;justify-content:space-between;gap:8px}
+.value-line output{color:var(--gold);font-size:11px}
+.small-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:7px}
+.kf-info{padding:9px;background:#111116;border:1px solid #353541;border-radius:6px;font-size:11px;color:#ccc;margin-top:10px}
+.export-progress{height:5px;background:#333;border-radius:9px;overflow:hidden;margin-top:8px;display:none}
+.export-progress>div{height:100%;width:0;background:var(--gold)}
+@media(max-width:900px){.editor-grid{grid-template-columns:repeat(2,minmax(230px,1fr))}}
+@media(max-width:600px){header{padding:10px}.editor-grid{grid-template-columns:1fr;padding:10px}.preview-area{padding:10px}canvas{max-height:38vh}.timeline-panel{padding:11px}.header-actions .btn{padding:8px;font-size:11px}h1{font-size:13px}}
+</style>
 </head>
 <body>
-
 <header>
-  <h1>🎬 VN Text Scroller</h1>
-  <div>
-    <span id="exportStatus"></span>
-    <button class="btn btn-primary" id="exportBtn">⬇ Export Video</button>
+  <h1>🎬 VN-Style Text Animation Editor</h1>
+  <div class="header-actions">
+    <span class="status" id="exportStatus" aria-live="polite"></span>
+    <button class="btn primary" id="exportBtn">⬇ Export Video</button>
   </div>
 </header>
 
-<!-- প্রিভিউ ক্যানভাস -->
-<div class="preview-area">
+<main>
+<section class="preview-area">
   <canvas id="videoCanvas" width="1280" height="720"></canvas>
-</div>
+  <div class="preview-hint">Preview • The canvas shows the current playhead frame</div>
+</section>
 
-<!-- VN-Style টাইমলাইন -->
-<div class="timeline-panel">
-  <div class="timeline-controls">
-    <div>
-      <button class="btn btn-primary" id="playPauseBtn">▶ Play</button>
-      <span id="timeDisplay" style="margin-left: 10px; font-size: 13px;">00:00.0 / 00:15.0</span>
+<section class="timeline-panel">
+  <div class="timeline-top">
+    <div class="timeline-top-left">
+      <button class="btn primary" id="playPauseBtn">▶ Play</button>
+      <button class="btn" id="toStartBtn">|◀</button>
+      <span id="timeDisplay">00:00.0 / 00:15.0</span>
     </div>
-
-    <div class="keyframe-actions">
-      <button class="btn" id="addKfBtn">💎 + Keyframe</button>
-      <button class="btn btn-danger" id="delKfBtn">🗑 Delete</button>
+    <div class="timeline-top-right">
+      <button class="btn" id="addKfBtn">◆ Add Keyframe</button>
+      <button class="btn danger" id="delKfBtn">Delete Keyframe</button>
     </div>
   </div>
-
-  <div class="timeline-track-container" id="timelineTrack">
-    <div class="timeline-clip"></div>
-    <div class="playhead" id="playhead" style="left: 0%;"></div>
-    <div id="keyframeMarkers"></div>
+  <div class="track-wrap">
+    <div class="ruler" id="ruler"></div>
+    <div class="timeline-track" id="timelineTrack">
+      <div class="timeline-clip"></div>
+      <div class="playhead" id="playhead" style="left:0%"></div>
+      <div id="keyframeMarkers"></div>
+    </div>
   </div>
-</div>
+  <div class="kf-legend"><span><i class="dot"></i>Keyframe</span><span><i class="dot active"></i>Selected keyframe</span><span>Tip: Drag a diamond to change its time, or tap the timeline to move the playhead.</span></div>
+</section>
 
-<!-- কন্ট্রোল প্যানেল -->
-<div class="sidebar">
-  <!-- ১. টেক্সট এডিটর -->
-  <div class="control-group">
-    <h3>1. Script / Text (এখানে লিখুন)</h3>
+<section class="editor-grid">
+  <div class="group">
+    <h2>1. Script & Text Style</h2>
+    <label for="scriptText">Your text / Bengali script</label>
     <textarea id="scriptText">একটি সুন্দর গল্প শুরু হয় ছোট্ট একটি স্বপ্ন থেকে...
 
 এখানে আপনার ইউটিউব ভিডিওর সম্পূর্ণ স্ক্রিপ্ট লিখুন বা পেস্ট করুন।
 
 Play বাটনে চাপ দিলে লেখাটি নিচ থেকে উপরে স্ক্রল হতে থাকবে!</textarea>
-
-    <label>Font Family:</label>
+    <label for="fontFamily">Font Family</label>
     <select id="fontFamily">
       <option value="'Hind Siliguri', sans-serif">Hind Siliguri (বাংলা আধুনিক)</option>
       <option value="'Noto Serif Bengali', serif">Noto Serif Bengali (বাংলা গল্প)</option>
-      <option value="'Poppins', sans-serif">Poppins (English Clean)</option>
+      <option value="'Poppins', sans-serif">Poppins (English)</option>
     </select>
-
     <div class="row">
-      <div>
-        <label>Font Size:</label>
-        <input type="range" id="fontSize" min="20" max="90" value="46">
-      </div>
-      <div>
-        <label>Line Spacing:</label>
-        <input type="range" id="lineHeight" min="1.1" max="2.5" step="0.1" value="1.5">
-      </div>
+      <div><label class="value-line">Font Size <output id="fontSizeVal">46 px</output></label><input type="range" id="fontSize" min="18" max="100" value="46"></div>
+      <div><label class="value-line">Line Spacing <output id="lineHeightVal">1.5×</output></label><input type="range" id="lineHeight" min="1.0" max="2.5" step=".1" value="1.5"></div>
     </div>
-
     <div class="row">
-      <div>
-        <label>Text Color:</label>
-        <input type="color" id="textColor" value="#ffffff">
-      </div>
-      <div>
-        <label>Text Shadow:</label>
-        <select id="textShadow">
-          <option value="true">On (স্পষ্ট লেখা)</option>
-          <option value="false">Off</option>
-        </select>
-      </div>
+      <div><label for="textColor">Text Color</label><input type="color" id="textColor" value="#ffffff"></div>
+      <div><label for="textShadow">Text Shadow</label><select id="textShadow"><option value="true">On</option><option value="false">Off</option></select></div>
     </div>
+    <label for="textAlign">Text Alignment</label>
+    <select id="textAlign"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select>
   </div>
 
-  <!-- ২. কী-ফ্রেম পজিশন কন্ট্রোল -->
-  <div class="control-group">
-    <h3>2. Keyframe Position & Zoom</h3>
-    <label>Vertical Position (Y %): <span id="yValText">75</span>%</label>
+  <div class="group">
+    <h2>2. Keyframe Transform</h2>
+    <div class="value-line"><label for="posYSlider">Vertical Position (Y)</label><output id="yValText">75%</output></div>
     <input type="range" id="posYSlider" min="-250" max="150" value="75">
-
-    <label>Text Zoom (Scale): <span id="scaleValText">1.00</span>x</label>
-    <input type="range" id="scaleSlider" min="0.5" max="2.5" step="0.05" value="1">
-
-    <label>Opacity (Fade): <span id="opValText">1.00</span></label>
-    <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="1">
+    <div class="value-line"><label for="scaleSlider">Scale / Zoom</label><output id="scaleValText">1.00×</output></div>
+    <input type="range" id="scaleSlider" min=".25" max="3" step=".05" value="1">
+    <div class="value-line"><label for="opacitySlider">Opacity</label><output id="opValText">1.00</output></div>
+    <input type="range" id="opacitySlider" min="0" max="1" step=".05" value="1">
+    <label for="easingSelect">Selected Keyframe Interpolation</label>
+    <select id="easingSelect">
+      <option value="linear">Linear</option>
+      <option value="easeIn">Ease In</option>
+      <option value="easeOut">Ease Out</option>
+      <option value="easeInOut">Ease In-Out</option>
+    </select>
+    <div class="kf-info" id="kfInfo">No keyframe selected</div>
+    <div class="small-note">Move the playhead, change Y / Scale / Opacity, then tap Add Keyframe. A keyframe stores all three values at that time.</div>
   </div>
 
-  <!-- ৩. ফ্রেম ও ব্যাকগ্রাউন্ড -->
-  <div class="control-group">
-    <h3>3. Frame & Background</h3>
+  <div class="group">
+    <h2>3. Canvas, Duration & Background</h2>
     <div class="row">
-      <button class="btn" id="ratio169">16:9 (YouTube)</button>
-      <button class="btn" id="ratio916">9:16 (Shorts)</button>
+      <button class="btn" id="ratio169">16:9 YouTube</button>
+      <button class="btn" id="ratio916">9:16 Shorts</button>
     </div>
-    <label>Total Duration (Seconds):</label>
-    <input type="number" id="durationInput" value="15" min="3" max="300">
-
-    <label>Background Color:</label>
-    <input type="color" id="bgColor" value="#111827">
-
-    <label>Upload Background Image:</label>
+    <label for="durationInput">Total Duration (seconds)</label>
+    <input type="number" id="durationInput" value="15" min="1" max="600" step=".5">
+    <div class="row">
+      <div><label for="bgColor">Background Color</label><input type="color" id="bgColor" value="#111827"></div>
+      <div><label for="bgDim">Image Darkness</label><input type="range" id="bgDim" min="0" max=".9" step=".05" value=".35"></div>
+    </div>
+    <label for="bgImageInput">Upload Background Image</label>
     <input type="file" id="bgImageInput" accept="image/*">
-
-    <label>Background Darkness (Dim):</label>
-    <input type="range" id="bgDim" min="0" max="0.85" step="0.05" value="0.35">
+    <button class="btn" id="removeBgBtn" style="margin-top:9px">Remove Background Image</button>
+    <div class="small-note">Export records the canvas as a WebM video in real time. Keep this tab open until export finishes. MP4 conversion is not built into a browser-only HTML file.</div>
   </div>
-</div>
+</section>
+</main>
 
 <script>
-  const canvas = document.getElementById('videoCanvas');
-  const ctx = canvas.getContext('2d');
-
-  let duration = 15;
-  let currentTime = 0;
-  let isPlaying = false;
-  let lastFrameTime = 0;
-  let bgImage = null;
-
-  // ডিফল্ট ২টি কী-ফ্রেম (0 সেকেন্ডে নিচে, 15 সেকেন্ডে উপরে)
-  let keyframes = [
-    { time: 0, y: 75, scale: 1, opacity: 1 },
-    { time: 15, y: -110, scale: 1, opacity: 1 }
-  ];
-
-  // বাটন ইভেন্টসমূহ
-  document.getElementById('playPauseBtn').addEventListener('click', togglePlay);
-  document.getElementById('addKfBtn').addEventListener('click', addOrUpdateKeyframe);
-  document.getElementById('delKfBtn').addEventListener('click', deleteKeyframe);
-  document.getElementById('ratio169').addEventListener('click', () => setAspectRatio(1280, 720));
-  document.getElementById('ratio916').addEventListener('click', () => setAspectRatio(720, 1280));
-
-  // টেক্সট ও স্টাইল ইনপুট আপডেট
-  ['scriptText', 'fontFamily', 'fontSize', 'lineHeight', 'textColor', 'textShadow', 'bgColor', 'bgDim'].forEach(id => {
-    document.getElementById(id).addEventListener('input', render);
-  });
-
-  // কী-ফ্রেম স্লাইডার আপডেট
-  ['posYSlider', 'scaleSlider', 'opacitySlider'].forEach(id => {
-    document.getElementById(id).addEventListener('input', addOrUpdateKeyframe);
-  });
-
-  // সময় (Duration) পরিবর্তন
-  document.getElementById('durationInput').addEventListener('change', () => {
-    const newDur = parseFloat(document.getElementById('durationInput').value) || 15;
-    duration = Math.max(3, newDur);
-    if (keyframes.length > 0) {
-      keyframes[keyframes.length - 1].time = duration;
-    }
-    if (currentTime > duration) currentTime = duration;
-    updateTimelineUI();
-    render();
-  });
-
-  // ব্যাকগ্রাউন্ড ছবি আপলোড (ফিক্সড)
-Use code with caution.
-document.getElementById('bgImageInput').addEventListener('change', function(e) {
-const file = e.target.files[0];
-if (!file) return;
-const img = new Image();
-img.onload = () => {
-bgImage = img;
-render();
-};
-img.src = URL.createObjectURL(file);
-});
-function setAspectRatio(w, h) {
-canvas.width = w;
-canvas.height = h;
-render();
-}
-// কী-ফ্রেম ইন্টারপোলেশন (ফিক্সড)
-function getInterpolatedState(t) {
-if (keyframes.length === 0) {
-return {
-y: parseFloat(document.getElementById('posYSlider').value),
-scale: parseFloat(document.getElementById('scaleSlider').value),
-opacity: parseFloat(document.getElementById('opacitySlider').value)
-};
-}
-keyframes.sort((a, b) => a.time - b.time);
-if (t <= keyframes[0].time) return { ...keyframes[0] };
-if (t >= keyframes[keyframes.length - 1].time) return { ...keyframes[keyframes.length - 1] };
-for (let i = 0; i < keyframes.length - 1; i++) {
-const k1 = keyframes[i];
-const k2 = keyframes[i + 1];
-if (t >= k1.time && t <= k2.time) {
-const span = k2.time - k1.time;
-const progress = span === 0 ? 0 : (t - k1.time) / span;
-return {
-y: k1.y + (k2.y - k1.y) * progress,
-scale: k1.scale + (k2.scale - k1.scale) * progress,
-opacity: k1.opacity + (k2.opacity - k1.opacity) * progress
-};
-}
-}
-return { ...keyframes[0] };
-}
-function addOrUpdateKeyframe() {
-const y = parseFloat(document.getElementById('posYSlider').value);
-const scale = parseFloat(document.getElementById('scaleSlider').value);
-const opacity = parseFloat(document.getElementById('opacitySlider').value);
-const existing = keyframes.find(k => Math.abs(k.time - currentTime) < 0.25);
-if (existing) {
-existing.y = y;
-existing.scale = scale;
-existing.opacity = opacity;
-} else {
-keyframes.push({ time: parseFloat(currentTime.toFixed(2)), y, scale, opacity });
-}
-updateTimelineUI();
-render();
-}
-function deleteKeyframe() {
-const idx = keyframes.findIndex(k => Math.abs(k.time - currentTime) < 0.25);
-if (idx !== -1) {
-keyframes.splice(idx, 1);
-updateTimelineUI();
-render();
-}
-}
-function wrapText(context, text, maxWidth) {
-const paragraphs = text.split('\n');
-let lines = [];
-paragraphs.forEach(p => {
-const words = p.split(' ');
-let currentLine = '';
-words.forEach(word => {
-const testLine = currentLine ? currentLine + ' ' + word : word;
-if (context.measureText(testLine).width > maxWidth && currentLine) {
-lines.push(currentLine);
-currentLine = word;
-} else {
-currentLine = testLine;
-}
-});
-lines.push(currentLine);
-});
-return lines;
-}
-function render() {
-const w = canvas.width;
-const h = canvas.height;
-ctx.fillStyle = document.getElementById('bgColor').value;
-ctx.fillRect(0, 0, w, h);
-if (bgImage) {
-const imgRatio = bgImage.width / bgImage.height;
-const canvasRatio = w / h;
-let drawW, drawH, offsetX, offsetY;
-if (imgRatio > canvasRatio) {
-drawH = h; drawW = h * imgRatio;
-offsetX = (w - drawW) / 2; offsetY = 0;
-} else {
-drawW = w; drawH = w / imgRatio;
-offsetX = 0; offsetY = (h - drawH) / 2;
-}
-ctx.drawImage(bgImage, offsetX, offsetY, drawW, drawH);
-}
-const dim = parseFloat(document.getElementById('bgDim').value);
-ctx.fillStyle = rgba(0, 0, 0, ${dim});
-ctx.fillRect(0, 0, w, h);
-const state = getInterpolatedState(currentTime);
-document.getElementById('posYSlider').value = state.y;
-document.getElementById('scaleSlider').value = state.scale;
-document.getElementById('opacitySlider').value = state.opacity;
-document.getElementById('yValText').innerText = Math.round(state.y);
-document.getElementById('scaleValText').innerText = state.scale.toFixed(2);
-document.getElementById('opValText').innerText = state.opacity.toFixed(2);
-const text = document.getElementById('scriptText').value;
-const fontSize = parseInt(document.getElementById('fontSize').value);
-const lineHeightMult = parseFloat(document.getElementById('lineHeight').value);
-const fontFamily = document.getElementById('fontFamily').value;
-const textColor = document.getElementById('textColor').value;
-const hasShadow = document.getElementById('textShadow').value === 'true';
-ctx.save();
-ctx.globalAlpha = state.opacity;
-ctx.translate(w / 2, (state.y / 100) * h);
-ctx.scale(state.scale, state.scale);
-ctx.font = 600 ${fontSize}px ${fontFamily};
-ctx.fillStyle = textColor;
-ctx.textAlign = 'center';
-ctx.textBaseline = 'top';
-if (hasShadow) {
-ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-ctx.shadowBlur = 10;
-ctx.shadowOffsetX = 2;
-ctx.shadowOffsetY = 3;
-}
-const maxWidth = w * 0.84;
-const lines = wrapText(ctx, text, maxWidth);
-const lineHeight = fontSize * lineHeightMult;
-lines.forEach((line, index) => {
-ctx.fillText(line, 0, index * lineHeight);
-});
-ctx.restore();
-}
-function updateTimelineUI() {
-const percent = (currentTime / duration) * 100;
-document.getElementById('playhead').style.left = ${Math.min(100, Math.max(0, percent))}%;
-document.getElementById('timeDisplay').innerText =
-${formatTime(currentTime)} / ${formatTime(duration)};
-const markersContainer = document.getElementById('keyframeMarkers');
-markersContainer.innerHTML = '';
-keyframes.forEach(kf => {
-if (kf.time <= duration) {
-const marker = document.createElement('div');
-marker.className = 'kf-marker' + (Math.abs(kf.time - currentTime) < 0.25 ? ' active' : '');
-marker.style.left = ${(kf.time / duration) * 100}%;
-marker.onclick = (e) => {
-e.stopPropagation();
-currentTime = kf.time;
-updateTimelineUI();
-render();
-};
-markersContainer.appendChild(marker);
-}
-});
-}
-function formatTime(sec) {
-const m = Math.floor(sec / 60).toString().padStart(2, '0');
-const s = (sec % 60).toFixed(1).padStart(4, '0');
-return ${m}:${s};
-}
-const track = document.getElementById('timelineTrack');
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const canvas = $("videoCanvas");
+const ctx = canvas.getContext("2d");
+const track = $("timelineTrack");
+let duration = 15;
+let currentTime = 0;
+let isPlaying = false;
+let lastFrameTime = 0;
+let bgImage = null;
+let animationId = null;
 let isScrubbing = false;
-function scrub(clientX) {
-const rect = track.getBoundingClientRect();
-const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-currentTime = pos * duration;
-updateTimelineUI();
-render();
+let draggingKeyframe = null;
+let exportRecorder = null;
+let exportStream = null;
+let exportChunks = [];
+let exporting = false;
+
+let keyframes = [
+  {id:1,time:0,y:75,scale:1,opacity:1,easing:"linear"},
+  {id:2,time:15,y:-110,scale:1,opacity:1,easing:"linear"}
+];
+let nextKeyframeId = 3;
+let selectedKeyframeId = 1;
+
+const clamp = (v,min,max) => Math.min(max,Math.max(min,v));
+const sortedFrames = () => [...keyframes].sort((a,b)=>a.time-b.time);
+const selectedFrame = () => keyframes.find(k=>k.id===selectedKeyframeId) || null;
+function formatTime(sec){
+  const m=Math.floor(sec/60).toString().padStart(2,"0");
+  const s=(sec%60).toFixed(1).padStart(4,"0");
+  return `${m}:${s}`;
 }
-track.addEventListener('pointerdown', (e) => {
-isScrubbing = true;
-isPlaying = false;
-updatePlayBtn();
-scrub(e.clientX);
+function ease(p,type){
+  if(type==="easeIn") return p*p;
+  if(type==="easeOut") return 1-(1-p)*(1-p);
+  if(type==="easeInOut") return p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
+  return p;
+}
+function getState(t){
+  const frames=sortedFrames();
+  if(!frames.length) return {y:75,scale:1,opacity:1};
+  if(t<=frames[0].time) return {...frames[0]};
+  if(t>=frames[frames.length-1].time) return {...frames[frames.length-1]};
+  for(let i=0;i<frames.length-1;i++){
+    const a=frames[i],b=frames[i+1];
+    if(t>=a.time && t<=b.time){
+      const span=b.time-a.time;
+      const p=span<=0?0:clamp((t-a.time)/span,0,1);
+      const q=ease(p,a.easing || "linear");
+      return {
+        y:a.y+(b.y-a.y)*q,
+        scale:a.scale+(b.scale-a.scale)*q,
+        opacity:a.opacity+(b.opacity-a.opacity)*q
+      };
+    }
+  }
+  return {...frames[0]};
+}
+function wrapText(text,maxWidth){
+  const lines=[];
+  const paragraphs=String(text).replace(/\r/g,"").split("\n");
+  for(const paragraph of paragraphs){
+    if(paragraph===""){lines.push("");continue;}
+    const words=paragraph.split(/\s+/);
+    let line="";
+    for(const word of words){
+      const candidate=line ? line+" "+word : word;
+      if(ctx.measureText(candidate).width<=maxWidth || !line){
+        if(ctx.measureText(candidate).width<=maxWidth){line=candidate;continue;}
+        // Split a single long word by Unicode code points (works for Bengali too).
+        let part="";
+        for(const ch of Array.from(word)){
+          if(part && ctx.measureText(part+ch).width>maxWidth){lines.push(part);part=ch;}
+          else part+=ch;
+        }
+        line=part;
+      }else{lines.push(line);line=word;}
+    }
+    if(line) lines.push(line);
+  }
+  return lines;
+}
+function drawBackground(w,h){
+  ctx.fillStyle=$("bgColor").value;
+  ctx.fillRect(0,0,w,h);
+  if(bgImage){
+    const ir=bgImage.width/bgImage.height, cr=w/h;
+    let dw,dh,dx,dy;
+    if(ir>cr){dh=h;dw=h*ir;dx=(w-dw)/2;dy=0;}
+    else{dw=w;dh=w/ir;dx=0;dy=(h-dh)/2;}
+    ctx.drawImage(bgImage,dx,dy,dw,dh);
+  }
+  const dim=Number($("bgDim").value);
+  if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,w,h);}
+}
+function render(){
+  const w=canvas.width,h=canvas.height;
+  drawBackground(w,h);
+  const state=getState(currentTime);
+  $("posYSlider").value=state.y;
+  $("scaleSlider").value=state.scale;
+  $("opacitySlider").value=state.opacity;
+  $("yValText").textContent=`${Math.round(state.y)}%`;
+  $("scaleValText").textContent=`${Number(state.scale).toFixed(2)}×`;
+  $("opValText").textContent=Number(state.opacity).toFixed(2);
+  $("fontSizeVal").textContent=`${$("fontSize").value} px`;
+  $("lineHeightVal").textContent=`${$("lineHeight").value}×`;
+
+  const text=$("scriptText").value;
+  const fontSize=Number($("fontSize").value);
+  const lineHeight=fontSize*Number($("lineHeight").value);
+  const fontFamily=$("fontFamily").value;
+  ctx.save();
+  ctx.globalAlpha=clamp(Number(state.opacity),0,1);
+  ctx.translate(w/2,(Number(state.y)/100)*h);
+  ctx.scale(Number(state.scale),Number(state.scale));
+  ctx.font=`600 ${fontSize}px ${fontFamily}`;
+  ctx.fillStyle=$("textColor").value;
+  ctx.textAlign=$("textAlign").value;
+  ctx.textBaseline="top";
+  if($("textShadow").value==="true"){
+    ctx.shadowColor="rgba(0,0,0,.85)";ctx.shadowBlur=10;ctx.shadowOffsetX=2;ctx.shadowOffsetY=3;
+  }else{ctx.shadowColor="transparent";ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;}
+  const maxWidth=w*.84;
+  const lines=wrapText(text,maxWidth);
+  const x=$("textAlign").value==="left" ? -maxWidth/2 : $("textAlign").value==="right" ? maxWidth/2 : 0;
+  lines.forEach((line,i)=>ctx.fillText(line,x,i*lineHeight,maxWidth));
+  ctx.restore();
+  updateTimelineUI();
+}
+function updateSelectedInfo(){
+  const k=selectedFrame();
+  if(!k){$("kfInfo").textContent="No keyframe selected";return;}
+  $("kfInfo").textContent=`Selected: ${formatTime(k.time)}  •  Y ${Math.round(k.y)}%  •  Scale ${k.scale.toFixed(2)}×  •  Opacity ${k.opacity.toFixed(2)}`;
+  $("easingSelect").value=k.easing || "linear";
+}
+function selectKeyframe(id){
+  const k=keyframes.find(x=>x.id===id);
+  if(!k)return;
+  selectedKeyframeId=id;
+  currentTime=k.time;
+  updateSelectedInfo();
+  render();
+}
+function updateTimelineUI(){
+  const percent=duration>0?currentTime/duration*100:0;
+  $("playhead").style.left=`${clamp(percent,0,100)}%`;
+  $("timeDisplay").textContent=`${formatTime(currentTime)} / ${formatTime(duration)}`;
+  const container=$("keyframeMarkers");
+  container.innerHTML="";
+  for(const k of sortedFrames()){
+    if(k.time>duration)continue;
+    const marker=document.createElement("button");
+    marker.type="button";
+    marker.className="kf-marker"+(k.id===selectedKeyframeId?" active":"");
+    marker.style.left=`${(k.time/duration)*100}%`;
+    marker.title=`${formatTime(k.time)} • Y ${Math.round(k.y)}%`;
+    marker.setAttribute("aria-label",`Keyframe at ${formatTime(k.time)}`);
+    marker.addEventListener("pointerdown",e=>{
+      e.stopPropagation();
+      draggingKeyframe=k.id;
+      marker.classList.add("dragging");
+      marker.setPointerCapture(e.pointerId);
+      selectKeyframe(k.id);
+    });
+    marker.addEventListener("pointermove",e=>{
+      if(draggingKeyframe!==k.id)return;
+      const rect=track.getBoundingClientRect();
+      const p=clamp((e.clientX-rect.left)/rect.width,0,1);
+      k.time=Number((p*duration).toFixed(2));
+      currentTime=k.time;
+      updateTimelineUI();updateSelectedInfo();render();
+    });
+    marker.addEventListener("pointerup",()=>{draggingKeyframe=null;});
+    marker.addEventListener("pointercancel",()=>{draggingKeyframe=null;});
+    marker.addEventListener("click",e=>{e.stopPropagation();selectKeyframe(k.id);});
+    container.appendChild(marker);
+  }
+  $("delKfBtn").disabled=keyframes.length<=1 || !selectedFrame();
+  updateSelectedInfo();
+}
+function setControlsFromState(state){
+  $("posYSlider").value=state.y;
+  $("scaleSlider").value=state.scale;
+  $("opacitySlider").value=state.opacity;
+}
+function addOrUpdateKeyframe(){
+  const values={
+    y:Number($("posYSlider").value),
+    scale:Number($("scaleSlider").value),
+    opacity:Number($("opacitySlider").value)
+  };
+  let k=keyframes.find(x=>Math.abs(x.time-currentTime)<.025);
+  if(k){
+    Object.assign(k,values);
+    selectedKeyframeId=k.id;
+  }else{
+    k={id:nextKeyframeId++,time:Number(currentTime.toFixed(2)),...values,easing:"linear"};
+    keyframes.push(k);
+    selectedKeyframeId=k.id;
+  }
+  render();
+}
+function deleteKeyframe(){
+  const k=selectedFrame();
+  if(!k || keyframes.length<=1)return;
+  keyframes=keyframes.filter(x=>x.id!==k.id);
+  const nearest=sortedFrames().reduce((best,x)=>Math.abs(x.time-currentTime)<Math.abs(best.time-currentTime)?x:best);
+  selectedKeyframeId=nearest.id;
+  currentTime=nearest.time;
+  render();
+}
+function updateTransformFromSlider(){
+  const vals={y:Number($("posYSlider").value),scale:Number($("scaleSlider").value),opacity:Number($("opacitySlider").value)};
+  const k=selectedFrame();
+  if(k && Math.abs(k.time-currentTime)<.03) Object.assign(k,vals);
+  else{
+    // Editing at a time between keyframes creates/updates a keyframe, like an editor's auto-key option.
+    let atTime=keyframes.find(x=>Math.abs(x.time-currentTime)<.025);
+    if(!atTime){atTime={id:nextKeyframeId++,time:Number(currentTime.toFixed(2)),...vals,easing:"linear"};keyframes.push(atTime);selectedKeyframeId=atTime.id;}
+    else Object.assign(atTime,vals);
+  }
+  render();
+}
+function setAspectRatio(w,h){canvas.width=w;canvas.height=h;render();}
+function scrub(clientX){
+  const rect=track.getBoundingClientRect();
+  currentTime=clamp((clientX-rect.left)/rect.width,0,1)*duration;
+  const exact=keyframes.find(k=>Math.abs(k.time-currentTime)<.025);
+  if(exact)selectedKeyframeId=exact.id;
+  render();
+}
+function stopPlayback(){isPlaying=false;if(animationId)cancelAnimationFrame(animationId);animationId=null;$("playPauseBtn").textContent="▶ Play";}
+function togglePlay(){
+  if(isPlaying){stopPlayback();return;}
+  if(currentTime>=duration)currentTime=0;
+  isPlaying=true;$("playPauseBtn").textContent="⏸ Pause";
+  lastFrameTime=performance.now();
+  animationId=requestAnimationFrame(playLoop);
+}
+function playLoop(now){
+  if(!isPlaying)return;
+  const dt=Math.min((now-lastFrameTime)/1000,.1);lastFrameTime=now;
+  currentTime+=dt;
+  if(currentTime>=duration){currentTime=duration;render();stopPlayback();return;}
+  render();animationId=requestAnimationFrame(playLoop);
+}
+function buildRuler(){
+  const r=$("ruler");r.innerHTML="";
+  const steps=duration<=10?5:duration<=30?6:10;
+  for(let i=0;i<=steps;i++){
+    const s=document.createElement("span");s.textContent=formatTime(duration*i/steps);
+    s.style.left=`${i/steps*100}%`;r.appendChild(s);
+  }
+}
+function setDuration(){
+  const n=Number($("durationInput").value);
+  if(!Number.isFinite(n))return;
+  duration=clamp(n,1,600);
+  $("durationInput").value=duration;
+  // Keep keyframes inside the new clip duration; preserve their relative positions.
+  keyframes.forEach(k=>k.time=clamp(k.time,0,duration));
+  currentTime=clamp(currentTime,0,duration);
+  buildRuler();render();
+}
+
+$("playPauseBtn").addEventListener("click",togglePlay);
+$("toStartBtn").addEventListener("click",()=>{stopPlayback();currentTime=0;const first=sortedFrames()[0];if(first)selectedKeyframeId=first.id;render();});
+$("addKfBtn").addEventListener("click",addOrUpdateKeyframe);
+$("delKfBtn").addEventListener("click",deleteKeyframe);
+$("ratio169").addEventListener("click",()=>setAspectRatio(1280,720));
+$("ratio916").addEventListener("click",()=>setAspectRatio(720,1280));
+$("durationInput").addEventListener("change",setDuration);
+["scriptText","fontFamily","fontSize","lineHeight","textColor","textShadow","textAlign","bgColor","bgDim"].forEach(id=>$(id).addEventListener("input",render));
+["posYSlider","scaleSlider","opacitySlider"].forEach(id=>$(id).addEventListener("input",updateTransformFromSlider));
+$("easingSelect").addEventListener("change",()=>{const k=selectedFrame();if(k){k.easing=$("easingSelect").value;render();}});
+$("bgImageInput").addEventListener("change",e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  if(!file.type.startsWith("image/")){alert("Please choose an image file.");return;}
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{bgImage=img;URL.revokeObjectURL(url);render();};
+  img.onerror=()=>{URL.revokeObjectURL(url);alert("Could not load this image.");};
+  img.src=url;
 });
-window.addEventListener('pointermove', (e) => { if (isScrubbing) scrub(e.clientX); });
-window.addEventListener('pointerup', () => { isScrubbing = false; });
-function togglePlay() {
-if (currentTime >= duration) currentTime = 0;
-isPlaying = !isPlaying;
-updatePlayBtn();
-if (isPlaying) {
-lastFrameTime = performance.now();
-requestAnimationFrame(loop);
-}
-}
-function updatePlayBtn() {
-document.getElementById('playPauseBtn').innerText = isPlaying ? '⏸ Pause' : '▶ Play';
-}
-function loop(now) {
-if (!isPlaying) return;
-const dt = (now - lastFrameTime) / 1000;
-lastFrameTime = now;
-currentTime += dt;
-if (currentTime >= duration) {
-currentTime = duration;
-isPlaying = false;
-updatePlayBtn();
-}
-updateTimelineUI();
-render();
-if (isPlaying) requestAnimationFrame(loop);
-}
-document.getElementById('exportBtn').addEventListener('click', () => {
-const status = document.getElementById('exportStatus');
-if (!canvas.captureStream) {
-alert('আপনার ব্রাউজারে সরাসরি ভিডিও এক্সপোর্ট সাপোর্ট করছে না। অনুগ্রহ করে Chrome ব্রাউজার ব্যবহার করুন।');
-return;
-}
-const stream = canvas.captureStream(60);
-const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-const chunks = [];
-recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-recorder.onstop = () => {
-const blob = new Blob(chunks, { type: 'video/webm' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = 'youtube-scrolling-text.webm';
-a.click();
-status.innerText = '✅ Done!';
-setTimeout(() => status.innerText = '', 4000);
-};
-currentTime = 0;
-isPlaying = true;
-updatePlayBtn();
-status.innerText = '⏳ Rendering...';
-recorder.start();
-lastFrameTime = performance.now();
-function exportLoop(now) {
-const dt = (now - lastFrameTime) / 1000;
-lastFrameTime = now;
-currentTime += dt;
-updateTimelineUI();
-render();
-if (currentTime < duration) {
-requestAnimationFrame(exportLoop);
-} else {
-isPlaying = false;
-updatePlayBtn();
-recorder.stop();
-}
-}
-requestAnimationFrame(exportLoop);
+$("removeBgBtn").addEventListener("click",()=>{bgImage=null;$("bgImageInput").value="";render();});
+track.addEventListener("pointerdown",e=>{
+  if(e.target.classList.contains("kf-marker"))return;
+  stopPlayback();isScrubbing=true;track.setPointerCapture(e.pointerId);scrub(e.clientX);
 });
-// পেজ লোড হওয়ার সাথে সাথে রেন্ডার
-updateTimelineUI();
+track.addEventListener("pointermove",e=>{if(isScrubbing)scrub(e.clientX);});
+track.addEventListener("pointerup",()=>{isScrubbing=false;});
+track.addEventListener("pointercancel",()=>{isScrubbing=false;});
+
+function chooseMimeType(){
+  const types=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];
+  return types.find(t=>window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
+}
+function exportVideo(){
+  if(exporting)return;
+  if(!canvas.captureStream || !window.MediaRecorder){
+    alert("Video export is not supported in this browser. Please try the latest Chrome or Edge.");
+    return;
+  }
+  const mimeType=chooseMimeType();
+  if(!mimeType && !MediaRecorder.isTypeSupported("video/webm")){
+    alert("This browser does not support WebM recording. Please use the latest Chrome or Edge.");
+    return;
+  }
+  stopPlayback();
+  currentTime=0;render();
+  exportStream=canvas.captureStream(30);
+  try{exportRecorder=new MediaRecorder(exportStream,mimeType?{mimeType}:{});}
+  catch(err){exportStream.getTracks().forEach(t=>t.stop());alert("Could not start video recording: "+err.message);return;}
+  exportChunks=[];exporting=true;
+  $("exportBtn").disabled=true;$("exportStatus").textContent="Rendering video…";
+  const startedAt=performance.now();
+  exportRecorder.ondataavailable=e=>{if(e.data&&e.data.size)exportChunks.push(e.data);};
+  exportRecorder.onerror=e=>{
+    exporting=false;$("exportBtn").disabled=false;$("exportStatus").textContent="Export failed";
+    if(exportStream)exportStream.getTracks().forEach(t=>t.stop());
+    console.error(e);
+  };
+  exportRecorder.onstop=()=>{
+    const blob=new Blob(exportChunks,{type:exportRecorder.mimeType||"video/webm"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="text-animation-video.webm";document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    if(exportStream)exportStream.getTracks().forEach(t=>t.stop());
+    exporting=false;$("exportBtn").disabled=false;$("exportStatus").textContent="✓ Export complete";
+    setTimeout(()=>$("exportStatus").textContent="",5000);
+  };
+  exportRecorder.start(250);
+  function frame(now){
+    if(!exporting)return;
+    currentTime=Math.min((now-startedAt)/1000,duration);
+    render();
+    $("exportStatus").textContent=`Rendering ${Math.min(100,Math.round(currentTime/duration*100))}%`;
+    if(currentTime<duration)requestAnimationFrame(frame);
+    else{
+      // Hold the final frame briefly so the recorder captures it.
+      setTimeout(()=>{if(exportRecorder&&exportRecorder.state!=="inactive")exportRecorder.stop();},250);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+$("exportBtn").addEventListener("click",exportVideo);
+
+buildRuler();
 render();
+})();
+</script>
+</body>
+</html>
