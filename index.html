@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VN-Style YouTube Text Scroller</title>
+  <!-- বাংলা ও ইংরেজি ফন্ট -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #121214;
+      color: #f1f1f1;
+      font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* হেডার */
+    header {
+      background: #1c1c21;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #2e2e36;
+    }
+    header h1 { font-size: 18px; color: #ffcc00; }
+    .btn {
+      background: #2b2b34;
+      color: #fff;
+      border: 1px solid #3f3f4c;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      transition: 0.2s;
+    }
+    .btn:hover { background: #3b3b47; }
+    .btn-primary { background: #ffcc00; color: #000; font-weight: 600; border: none; }
+    .btn-primary:hover { background: #e6b800; }
+    .btn-danger { background: #e63946; border: none; }
+
+    /* মেইন ওয়ার্কস্পেস */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* বাম পাশের কন্ট্রোল প্যানেল */
+    .sidebar {
+      width: 340px;
+      background: #18181c;
+      border-right: 1px solid #2e2e36;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .control-group {
+      background: #212127;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #2c2c35;
+    }
+    .control-group h3 {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea {
+      width: 100%;
+      height: 110px;
+      background: #121215;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+    }
+    label { display: block; font-size: 12px; margin-top: 8px; color: #ccc; }
+    input[type="range"], select, input[type="color"], input[type="number"] {
+      width: 100%;
+      margin-top: 4px;
+      background: #121215;
+      color: #fff;
+      border: 1px solid #333;
+      padding: 5px;
+      border-radius: 4px;
+    }
+    .row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+    .row > * { flex: 1; }
+
+    /* মাঝখানের প্রিভিউ এরিয়া */
+    .preview-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0d0d0f;
+      padding: 20px;
+      position: relative;
+    }
+    canvas {
+      background: #000;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      max-width: 100%;
+      max-height: 100%;
+      border: 1px solid #333;
+    }
+
+    /* নিচের VN-Style টাইমলাইন ও কী-ফ্রেম বার */
+    .timeline-panel {
+      height: 165px;
+      background: #18181c;
+      border-top: 1px solid #2e2e36;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .timeline-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .keyframe-actions { display: flex; gap: 8px; align-items: center; }
+    .timeline-track-container {
+      position: relative;
+      height: 60px;
+      background: #101013;
+      border: 1px solid #2d2d36;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      margin-top: 5px;
+    }
+    .timeline-clip {
+      position: absolute;
+      top: 12px;
+      left: 0;
+      right: 0;
+      height: 36px;
+      background: #2b4c7e;
+      border-radius: 4px;
+      border: 1px solid #4a7bc7;
+    }
+    .playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #ffcc00;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .playhead::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -5px;
+      width: 12px;
+      height: 12px;
+      background: #ffcc00;
+      border-radius: 50%;
+    }
+    /* ডায়মন্ড শেপ কী-ফ্রেম মার্কার (VN এর মতো) */
+    .kf-marker {
+      position: absolute;
+      top: 23px;
+      width: 14px;
+      height: 14px;
+      background: #ff4d4d;
+      border: 2px solid #fff;
+      transform: translateX(-50%) rotate(45deg);
+      z-index: 5;
+      cursor: pointer;
+    }
+    .kf-marker.active { background: #00e676; transform: translateX(-50%) rotate(45deg) scale(1.2); }
+    #exportStatus { font-size: 13px; color: #ffcc00; margin-right: 10px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎬 VN-Style Text Scroller</h1>
+  <div>
+    <span id="exportStatus"></span>
+    <button class="btn btn-primary" id="exportBtn">⬇ Export Video</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- বাম প্যানেল -->
+  <div class="sidebar">
+    <!-- ফ্রেম ও সময় -->
+    <div class="control-group">
+      <h3>1. Frame & Duration</h3>
+      <div class="row">
+        <button class="btn" onclick="setAspectRatio(1280, 720)">16:9 (YouTube)</button>
+        <button class="btn" onclick="setAspectRatio(720, 1280)">9:16 (Shorts)</button>
+      </div>
+      <label>Total Duration (Seconds):</label>
+      <input type="number" id="durationInput" value="15" min="3" max="300" onchange="updateDuration()">
+    </div>
+
+    <!-- টেক্সট এডিটর -->
+    <div class="control-group">
+      <h3>2. Script / Text</h3>
+      <textarea id="scriptText" oninput="render()">একটি সুন্দর গল্প শুরু হয় ছোট্ট একটি স্বপ্ন থেকে...
+
+আপনি চাইলে এখানে আপনার ইউটিউব ভিডিওর সম্পূর্ণ স্ক্রিপ্ট পেস্ট করতে পারেন।
+
+নিচের টাইমলাইনে Keyframe (+) বাটন ব্যবহার করে লেখার গতি এবং পজিশন কন্ট্রোল করুন।</textarea>
+
+      <label>Font Family:</label>
+      <select id="fontFamily" onchange="render()">
+        <option value="'Hind Siliguri', sans-serif">Hind Siliguri (বাংলা আধুনিক)</option>
+        <option value="'Noto Serif Bengali', serif">Noto Serif Bengali (বাংলা গল্প)</option>
+        <option value="'Poppins', sans-serif">Poppins (English Clean)</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label>Font Size:</label>
+          <input type="range" id="fontSize" min="20" max="90" value="42" oninput="render()">
+        </div>
+        <div>
+          <label>Line Spacing:</label>
+          <input type="range" id="lineHeight" min="1.1" max="2.5" step="0.1" value="1.5" oninput="render()">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Text Color:</label>
+          <input type="color" id="textColor" value="#ffffff" oninput="render()">
+        </div>
+        <div>
+          <label>Text Shadow:</label>
+          <select id="textShadow" onchange="render()">
+            <option value="true">On (স্পষ্ট লেখা)</option>
+            <option value="false">Off</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ব্যাকগ্রাউন্ড -->
+    <div class="control-group">
+      <h3>3. Background</h3>
+      <label>Background Color:</label>
+      <input type="color" id="bgColor" value="#111827" oninput="render()">
+
+      <label>Upload Background Image:</label>
+      <input type="file" id="bgImageInput" accept="image/*">
+
+      <label>Background Darkness (Dim):</label>
+      <input type="range" id="bgDim" min="0" max="0.85" step="0.05" value="0.4" oninput="render()">
+    </div>
+
+    <!-- কী-ফ্রেম প্রপার্টি -->
+    <div class="control-group">
+      <h3>4. Current Position & Opacity</h3>
+      <label>Vertical Position (Y %):</label>
+      <input type="range" id="posYSlider" min="-200" max="150" value="80" oninput="onTransformChange()">
+
+      <label>Text Scale (Zoom):</label>
+      <input type="range" id="scaleSlider" min="0.5" max="2" step="0.05" value="1" oninput="onTransformChange()">
+
+      <label>Opacity (Fade):</label>
+      <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="1" oninput="onTransformChange()">
+    </div>
+  </div>
+
+  <!-- প্রিভিউ ক্যানভাস -->
+  <div class="preview-area">
+    <canvas id="videoCanvas" width="1280" height="720"></canvas>
+  </div>
+</div>
+
+<!-- VN-Style টাইমলাইন -->
+<div class="timeline-panel">
+  <div class="timeline-controls">
+    <div>
+      <button class="btn btn-primary" id="playPauseBtn" onclick="togglePlay()">▶ Play</button>
+      <span id="timeDisplay" style="margin-left: 12px; font-size: 14px;">00:00.0 / 00:15.0</span>
+    </div>
+
+    <div class="keyframe-actions">
+      <span style="font-size: 12px; color: #aaa;">VN Keyframe:</span>
+      <button class="btn" onclick="addOrUpdateKeyframe()">💎 + Add / Update Keyframe</button>
+      <button class="btn btn-danger" onclick="deleteKeyframe()">🗑 Delete Keyframe</button>
+    </div>
+  </div>
+
+  <div class="timeline-track-container" id="timelineTrack">
+    <div class="timeline-clip"></div>
+    <div class="playhead" id="playhead" style="left: 0%;"></div>
+    <div id="keyframeMarkers"></div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('videoCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let duration = 15; // সেকেন্ড
+  let currentTime = 0;
+  let isPlaying = false;
+  let lastFrameTime = 0;
+  let bgImage = null;
+
+  // ডিফল্ট ২টি কী-ফ্রেম (শুরুতে নিচে, শেষে উপরে স্ক্রল হবে)
+  let keyframes = [
+    { time: 0, y: 95, scale: 1, opacity: 1 },
+    { time: 15, y: -120, scale: 1, opacity: 1 }
+  ];
+
+  // ছবি আপলোড হ্যান্ডলার
+  document.getElementById('bgImageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => { bgImage = img; render(); };
