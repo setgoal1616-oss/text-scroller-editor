@@ -1,520 +1,203 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VN Style Text Animation Editor</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#15151b">
+<title>VN Style Text Keyframe Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#101014;--panel:#1a1a21;--panel2:#22222b;--line:#343440;--gold:#ffcc00;--muted:#a5a5b2;--blue:#315b91;--blue2:#4b83c8}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#f5f5f7;font-family:Poppins,"Hind Siliguri",sans-serif;min-height:100vh}
-button,input,select,textarea{font:inherit}
-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#19191f;border-bottom:1px solid var(--line)}
-h1{font-size:16px;margin:0;color:var(--gold)}
-.header-actions{display:flex;align-items:center;gap:9px}
-.btn{border:1px solid #454552;background:#2a2a34;color:#fff;padding:9px 12px;border-radius:7px;font-size:12px;cursor:pointer}
-.btn:hover{filter:brightness(1.15)}.btn:disabled{opacity:.45;cursor:not-allowed}
-.primary{background:var(--gold);color:#111;border-color:var(--gold);font-weight:700}
-.danger{background:#b92f3a;border-color:#b92f3a}
-.status{font-size:11px;color:var(--gold)}
-main{max-width:1500px;margin:auto}
-.preview-area{background:#08080b;padding:16px;display:flex;flex-direction:column;align-items:center;gap:9px}
-canvas{display:block;max-width:100%;max-height:48vh;width:auto;height:auto;background:#111827;border:1px solid #3a3a43;box-shadow:0 8px 28px #0009}
-.preview-hint{font-size:11px;color:var(--muted)}
-.timeline-panel{background:var(--panel);padding:13px 16px;border-block:1px solid var(--line)}
-.timeline-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:11px}
-.timeline-top-left,.timeline-top-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-#timeDisplay{font-size:12px;color:#ddd;font-variant-numeric:tabular-nums}
-.track-wrap{position:relative;padding:10px 0 4px}
-.ruler{height:16px;position:relative;color:#888;font-size:9px}
-.ruler span{position:absolute;transform:translateX(-50%)}
-.timeline-track{height:54px;position:relative;background:#101015;border:1px solid #363642;border-radius:7px;touch-action:pan-y;user-select:none;overflow:visible}
-.timeline-clip{position:absolute;left:0;right:0;top:9px;height:34px;border:1px solid var(--blue2);background:linear-gradient(90deg,#29466d,#315b91);border-radius:4px;pointer-events:none}
-.playhead{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--gold);z-index:8;pointer-events:none}
-.playhead:before{content:"";position:absolute;top:-2px;left:-5px;width:12px;height:12px;border-radius:50%;background:var(--gold)}
-.kf-marker{position:absolute;top:19px;width:15px;height:15px;background:#f04c55;border:2px solid white;transform:translate(-50%,-50%) rotate(45deg);z-index:10;cursor:grab;touch-action:none}
-.kf-marker.active{background:#00d982;outline:2px solid #00d98255;transform:translate(-50%,-50%) rotate(45deg) scale(1.2)}
-.kf-marker.dragging{cursor:grabbing}
-.kf-legend{display:flex;gap:14px;font-size:10px;color:var(--muted);margin-top:8px}
-.dot{display:inline-block;width:8px;height:8px;transform:rotate(45deg);margin-right:5px;background:#f04c55}.dot.active{background:#00d982}
-.editor-grid{display:grid;grid-template-columns:repeat(3,minmax(250px,1fr));gap:12px;padding:14px}
-.group{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px;min-width:0}
-.group h2{font-size:13px;color:var(--gold);margin:0 0 11px}
-label{display:block;font-size:11px;color:#c8c8d0;margin:9px 0 5px}
-textarea,select,input[type=number],input[type=text]{width:100%;background:#111116;color:#fff;border:1px solid #41414d;border-radius:6px;padding:8px;font-size:12px}
-textarea{height:112px;resize:vertical;font-family:inherit;line-height:1.5}
-input[type=range]{width:100%;accent-color:var(--gold)}
-input[type=color]{width:100%;height:34px;padding:2px;background:#111116;border:1px solid #41414d;border-radius:6px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.value-line{display:flex;justify-content:space-between;gap:8px}
-.value-line output{color:var(--gold);font-size:11px}
-.small-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:7px}
-.kf-info{padding:9px;background:#111116;border:1px solid #353541;border-radius:6px;font-size:11px;color:#ccc;margin-top:10px}
-.export-progress{height:5px;background:#333;border-radius:9px;overflow:hidden;margin-top:8px;display:none}
-.export-progress>div{height:100%;width:0;background:var(--gold)}
-@media(max-width:900px){.editor-grid{grid-template-columns:repeat(2,minmax(230px,1fr))}}
-@media(max-width:600px){header{padding:10px}.editor-grid{grid-template-columns:1fr;padding:10px}.preview-area{padding:10px}canvas{max-height:38vh}.timeline-panel{padding:11px}.header-actions .btn{padding:8px;font-size:11px}h1{font-size:13px}}
+:root{--bg:#15151b;--panel:#202027;--panel2:#292932;--line:#393943;--teal:#087f80;--cyan:#00e8e8;--gold:#ffcf36;--muted:#a5a5b0}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:#f7f7fa;font-family:Poppins,"Hind Siliguri",sans-serif}button,input,select,textarea{font:inherit}
+header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#1c1c23;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+header strong{font-size:14px;color:#fff}button{border:0;cursor:pointer;color:#fff;background:#353540;border-radius:7px;padding:9px 12px;font-size:12px}button:disabled{opacity:.4;cursor:not-allowed}.primary{background:var(--teal);font-weight:700}.gold{background:var(--gold);color:#111;font-weight:700}.danger{background:#a8323e}.small{padding:7px 9px}
+#status{font-size:10px;color:#ffe17a;max-width:45%;text-align:right}
+.preview-wrap{background:#08080b;padding:12px 10px 14px;display:flex;align-items:center;justify-content:center;min-height:250px}
+canvas{display:block;max-width:100%;max-height:44vh;width:auto;height:auto;background:#000;object-fit:contain;border:1px solid #333;touch-action:manipulation}
+.transport{background:#1b1b22;padding:9px 12px;border-block:1px solid #34343e;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.transport .left,.transport .right{display:flex;align-items:center;gap:8px}.time{font-size:12px;font-variant-numeric:tabular-nums;color:#eee;min-width:100px}
+.timeline-shell{background:#1b1b22;padding:10px 10px 14px;border-bottom:1px solid #393943}
+.timeline-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.timeline-head b{font-size:12px;color:#ddd}.timeline-head span{font-size:10px;color:var(--muted)}
+.ruler{height:19px;position:relative;color:#92929e;font-size:9px}.ruler span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.track{height:64px;background:#101015;border:1px solid #393943;border-radius:7px;position:relative;touch-action:pan-y;user-select:none}
+.clip{position:absolute;left:0;right:0;top:12px;height:38px;border:2px solid #00dfe0;border-radius:5px;background:#075457;opacity:.9;pointer-events:none}
+.clip:before{content:"TEXT";position:absolute;left:9px;top:8px;color:#aaffff;font-size:10px;font-weight:700}
+.playhead{position:absolute;z-index:8;top:-7px;bottom:-8px;width:2px;background:#fff;pointer-events:none}.playhead:before{content:"";position:absolute;top:-1px;left:-5px;width:12px;height:12px;border-radius:50%;background:#fff}
+.marker{position:absolute;z-index:10;top:31px;width:15px;height:15px;padding:0;border:2px solid #fff;background:#fff;transform:translate(-50%,-50%) rotate(45deg);border-radius:1px;touch-action:none;box-shadow:0 0 0 1px #0008}
+.marker.active{background:#00e6dc;border-color:#fff;box-shadow:0 0 0 2px #00e6dc}
+.marker.drag{opacity:.7}
+#dragDeleteHint{display:none;text-align:center;color:#ff9aa3;border:1px dashed #bd4b58;border-radius:7px;padding:10px;margin-top:8px;font-size:11px;background:#351b21}
+#dragDeleteHint.show{display:block}
+#dragDeleteHint.ready{background:#8d2632;color:#fff;border-color:#ff9aa3}
+.kf-toolbar{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:9px}.kf-toolbar button{min-width:62px;padding:8px 7px;font-size:10px}.kf-toolbar button.active{background:#087f80;outline:1px solid #22dada}
+.editor{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px;min-width:0}
+.panel h2{font-size:12px;color:#ffe17a;margin:0 0 9px}
+label{display:block;font-size:11px;color:#d0d0d7;margin:9px 0 5px}
+textarea,select,input[type=number]{width:100%;background:#111116;color:#fff;border:1px solid #454550;border-radius:6px;padding:8px;font-size:12px}
+textarea{height:100px;resize:vertical;line-height:1.55}
+input[type=range]{width:100%;accent-color:#00dada}
+input[type=color]{width:100%;height:34px;background:#111;border:1px solid #444;border-radius:6px;padding:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.labelrow{display:flex;justify-content:space-between;gap:8px}.labelrow output{color:#ffe17a;font-size:10px}
+.info{font-size:10px;color:#c5c5ce;background:#121218;padding:8px;border-radius:6px;margin-top:8px;line-height:1.5}
+.note{font-size:10px;color:#a6a6b1;line-height:1.5;margin-top:7px}
+@media(max-width:850px){.editor{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){header strong{font-size:12px}.preview-wrap{min-height:220px}canvas{max-height:38vh}.editor{grid-template-columns:1fr;padding:9px}.timeline-shell{padding:9px 8px 12px}.kf-toolbar button{min-width:55px}.transport{padding:8px}.time{min-width:88px}}
 </style>
 </head>
 <body>
-<header>
-  <h1>🎬 VN-Style Text Animation Editor</h1>
-  <div class="header-actions">
-    <span class="status" id="exportStatus" aria-live="polite"></span>
-    <button class="btn primary" id="exportBtn">⬇ Export Video</button>
-  </div>
-</header>
-
-<main>
-<section class="preview-area">
-  <canvas id="videoCanvas" width="1280" height="720"></canvas>
-  <div class="preview-hint">Preview • The canvas shows the current playhead frame</div>
+<header><strong>🎬 VN Text Keyframe Editor</strong><span id="status">Ready</span><button id="exportBtn" class="gold small">Export Video</button></header>
+<div class="preview-wrap"><canvas id="canvas" width="720" height="1280" aria-label="Video preview"></canvas></div>
+<div class="transport">
+ <div class="left"><button id="startBtn" class="small">|◀</button><button id="playBtn" class="primary">▶ Play</button><button id="endBtn" class="small">▶|</button><span class="time" id="timeLabel">00:00.00 / 00:03.00</span></div>
+ <div class="right"><button id="undoBtn" class="small">↶</button><button id="redoBtn" class="small">↷</button></div>
+</div>
+<section class="timeline-shell">
+ <div class="timeline-head"><b>Timeline · Text Layer</b><span>Tap timeline to move • Drag diamonds to retime</span></div>
+ <div class="ruler" id="ruler"></div>
+ <div class="track" id="track"><div class="clip"></div><div class="playhead" id="playhead"></div><div id="markers"></div></div>
+ <div id="dragDeleteHint">↓ Drag keyframe down here to delete (VN-style)</div>
+ <div class="kf-toolbar">
+  <button id="editBtn">✎ Edit</button><button id="autoBtn" class="active">◇ Auto Key</button><button id="addBtn">＋ Keyframe</button><button id="curveBtn">⌁ Curve</button><button id="duplicateBtn">▣ Duplicate</button><button id="deleteBtn" class="danger">▤ Delete</button>
+ </div>
+ <div class="info" id="kfInfo">Auto Key is ON. Move the playhead and change a property; a keyframe will be created automatically.</div>
 </section>
-
-<section class="timeline-panel">
-  <div class="timeline-top">
-    <div class="timeline-top-left">
-      <button class="btn primary" id="playPauseBtn">▶ Play</button>
-      <button class="btn" id="toStartBtn">|◀</button>
-      <span id="timeDisplay">00:00.0 / 00:15.0</span>
-    </div>
-    <div class="timeline-top-right">
-      <button class="btn" id="addKfBtn">◆ Add Keyframe</button>
-      <button class="btn danger" id="delKfBtn">Delete Keyframe</button>
-    </div>
-  </div>
-  <div class="track-wrap">
-    <div class="ruler" id="ruler"></div>
-    <div class="timeline-track" id="timelineTrack">
-      <div class="timeline-clip"></div>
-      <div class="playhead" id="playhead" style="left:0%"></div>
-      <div id="keyframeMarkers"></div>
-    </div>
-  </div>
-  <div class="kf-legend"><span><i class="dot"></i>Keyframe</span><span><i class="dot active"></i>Selected keyframe</span><span>Tip: Drag a diamond to change its time, or tap the timeline to move the playhead.</span></div>
+<section class="editor">
+ <div class="panel">
+  <h2>Text & Typography</h2>
+  <label for="textInput">Text / Bengali Script</label><textarea id="textInput">আপনার লেখা এখানে লিখুন...
+নিচ থেকে উপরে সুন্দরভাবে স্ক্রল হবে।</textarea>
+  <label for="font">Font</label><select id="font"><option value="'Hind Siliguri',sans-serif">Hind Siliguri</option><option value="'Noto Serif Bengali',serif">Noto Serif Bengali</option><option value="Poppins,sans-serif">Poppins</option></select>
+  <div class="grid2"><div><label for="fontSize">Font Size <output id="fontSizeOut">48</output></label><input id="fontSize" type="range" min="18" max="100" value="48"></div><div><label for="lineHeight">Line Spacing <output id="lineOut">1.5</output></label><input id="lineHeight" type="range" min="1" max="2.5" step=".1" value="1.5"></div></div>
+  <div class="grid2"><div><label for="color">Text Color</label><input id="color" type="color" value="#ffffff"></div><div><label for="align">Alignment</label><select id="align"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select></div></div>
+  <label for="shadow">Text Shadow</label><select id="shadow"><option value="yes">On</option><option value="no">Off</option></select>
+ </div>
+ <div class="panel">
+  <h2>Transform · Keyframe Properties</h2>
+  <div class="labelrow"><label for="y">Position Y (%)</label><output id="yOut">50%</output></div><input id="y" type="range" min="-100" max="150" value="50">
+  <div class="labelrow"><label for="scale">Scale</label><output id="scaleOut">1.00×</output></div><input id="scale" type="range" min=".2" max="3" step=".05" value="1">
+  <div class="labelrow"><label for="opacity">Opacity</label><output id="opacityOut">1.00</output></div><input id="opacity" type="range" min="0" max="1" step=".05" value="1">
+  <label for="easing">Interpolation curve</label><select id="easing"><option value="linear">Linear</option><option value="easeIn">Ease In</option><option value="easeOut">Ease Out</option><option value="easeInOut">Ease In-Out</option></select>
+  <div class="note">Auto Key ON: changing Y, Scale or Opacity at the current playhead creates/updates a keyframe immediately, like VN Editor.</div>
+ </div>
+ <div class="panel">
+  <h2>Canvas & Background</h2>
+  <div class="grid2"><button id="shortsBtn" class="primary">9:16 Shorts</button><button id="wideBtn">16:9 YouTube</button></div>
+  <label for="duration">Duration (seconds)</label><input id="duration" type="number" min="1" max="300" step=".5" value="3">
+  <div class="grid2"><div><label for="bg">Background Color</label><input id="bg" type="color" value="#000000"></div><div><label for="dim">Image Dim</label><input id="dim" type="range" min="0" max=".9" step=".05" value="0"></div></div>
+  <label for="imageInput">Background Image</label><input id="imageInput" type="file" accept="image/*">
+  <button id="removeImage" class="small" style="margin-top:8px">Remove Image</button>
+  <div class="note">Export creates a WebM video. Keep this page open until the export finishes. Browser support is required for video recording.</div>
+ </div>
 </section>
-
-<section class="editor-grid">
-  <div class="group">
-    <h2>1. Script & Text Style</h2>
-    <label for="scriptText">Your text / Bengali script</label>
-    <textarea id="scriptText">একটি সুন্দর গল্প শুরু হয় ছোট্ট একটি স্বপ্ন থেকে...
-
-এখানে আপনার ইউটিউব ভিডিওর সম্পূর্ণ স্ক্রিপ্ট লিখুন বা পেস্ট করুন।
-
-Play বাটনে চাপ দিলে লেখাটি নিচ থেকে উপরে স্ক্রল হতে থাকবে!</textarea>
-    <label for="fontFamily">Font Family</label>
-    <select id="fontFamily">
-      <option value="'Hind Siliguri', sans-serif">Hind Siliguri (বাংলা আধুনিক)</option>
-      <option value="'Noto Serif Bengali', serif">Noto Serif Bengali (বাংলা গল্প)</option>
-      <option value="'Poppins', sans-serif">Poppins (English)</option>
-    </select>
-    <div class="row">
-      <div><label class="value-line">Font Size <output id="fontSizeVal">46 px</output></label><input type="range" id="fontSize" min="18" max="100" value="46"></div>
-      <div><label class="value-line">Line Spacing <output id="lineHeightVal">1.5×</output></label><input type="range" id="lineHeight" min="1.0" max="2.5" step=".1" value="1.5"></div>
-    </div>
-    <div class="row">
-      <div><label for="textColor">Text Color</label><input type="color" id="textColor" value="#ffffff"></div>
-      <div><label for="textShadow">Text Shadow</label><select id="textShadow"><option value="true">On</option><option value="false">Off</option></select></div>
-    </div>
-    <label for="textAlign">Text Alignment</label>
-    <select id="textAlign"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select>
-  </div>
-
-  <div class="group">
-    <h2>2. Keyframe Transform</h2>
-    <div class="value-line"><label for="posYSlider">Vertical Position (Y)</label><output id="yValText">75%</output></div>
-    <input type="range" id="posYSlider" min="-250" max="150" value="75">
-    <div class="value-line"><label for="scaleSlider">Scale / Zoom</label><output id="scaleValText">1.00×</output></div>
-    <input type="range" id="scaleSlider" min=".25" max="3" step=".05" value="1">
-    <div class="value-line"><label for="opacitySlider">Opacity</label><output id="opValText">1.00</output></div>
-    <input type="range" id="opacitySlider" min="0" max="1" step=".05" value="1">
-    <label for="easingSelect">Selected Keyframe Interpolation</label>
-    <select id="easingSelect">
-      <option value="linear">Linear</option>
-      <option value="easeIn">Ease In</option>
-      <option value="easeOut">Ease Out</option>
-      <option value="easeInOut">Ease In-Out</option>
-    </select>
-    <div class="kf-info" id="kfInfo">No keyframe selected</div>
-    <div class="small-note">Move the playhead, change Y / Scale / Opacity, then tap Add Keyframe. A keyframe stores all three values at that time.</div>
-  </div>
-
-  <div class="group">
-    <h2>3. Canvas, Duration & Background</h2>
-    <div class="row">
-      <button class="btn" id="ratio169">16:9 YouTube</button>
-      <button class="btn" id="ratio916">9:16 Shorts</button>
-    </div>
-    <label for="durationInput">Total Duration (seconds)</label>
-    <input type="number" id="durationInput" value="15" min="1" max="600" step=".5">
-    <div class="row">
-      <div><label for="bgColor">Background Color</label><input type="color" id="bgColor" value="#111827"></div>
-      <div><label for="bgDim">Image Darkness</label><input type="range" id="bgDim" min="0" max=".9" step=".05" value=".35"></div>
-    </div>
-    <label for="bgImageInput">Upload Background Image</label>
-    <input type="file" id="bgImageInput" accept="image/*">
-    <button class="btn" id="removeBgBtn" style="margin-top:9px">Remove Background Image</button>
-    <div class="small-note">Export records the canvas as a WebM video in real time. Keep this tab open until export finishes. MP4 conversion is not built into a browser-only HTML file.</div>
-  </div>
-</section>
-</main>
-
 <script>
-(() => {
+(()=> {
 "use strict";
-const $ = id => document.getElementById(id);
-const canvas = $("videoCanvas");
-const ctx = canvas.getContext("2d");
-const track = $("timelineTrack");
-let duration = 15;
-let currentTime = 0;
-let isPlaying = false;
-let lastFrameTime = 0;
-let bgImage = null;
-let animationId = null;
-let isScrubbing = false;
-let draggingKeyframe = null;
-let exportRecorder = null;
-let exportStream = null;
-let exportChunks = [];
-let exporting = false;
-
-let keyframes = [
-  {id:1,time:0,y:75,scale:1,opacity:1,easing:"linear"},
-  {id:2,time:15,y:-110,scale:1,opacity:1,easing:"linear"}
-];
-let nextKeyframeId = 3;
-let selectedKeyframeId = 1;
-
-const clamp = (v,min,max) => Math.min(max,Math.max(min,v));
-const sortedFrames = () => [...keyframes].sort((a,b)=>a.time-b.time);
-const selectedFrame = () => keyframes.find(k=>k.id===selectedKeyframeId) || null;
-function formatTime(sec){
-  const m=Math.floor(sec/60).toString().padStart(2,"0");
-  const s=(sec%60).toFixed(1).padStart(4,"0");
-  return `${m}:${s}`;
+const $=id=>document.getElementById(id), canvas=$("canvas"),ctx=canvas.getContext("2d");
+let duration=3,time=0,playing=false,raf=0,last=0,bgImage=null,autoKey=true,dragId=null,dragPointerId=null,dragDeleteReady=false,recording=false;
+let frames=[{id:1,t:0,y:50,s:1,o:1,e:"linear"},{id:2,t:3,y:-80,s:1,o:1,e:"linear"}],nextId=3,selected=1;
+let undoStack=[],redoStack=[];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),ordered=()=>[...frames].sort((a,b)=>a.t-b.t),selectedFrame=()=>frames.find(f=>f.id===selected);
+function snapshot(){return JSON.stringify({frames,time,selected});}
+function saveUndo(){undoStack.push(snapshot());if(undoStack.length>40)undoStack.shift();redoStack=[];updateUndoButtons();}
+function restore(s){const d=JSON.parse(s);frames=d.frames;time=d.time;selected=d.selected;render();}
+function updateUndoButtons(){$("undoBtn").disabled=!undoStack.length;$("redoBtn").disabled=!redoStack.length;}
+function fmt(t){let m=Math.floor(t/60),s=(t%60).toFixed(2);return `${String(m).padStart(2,"0")}:${s.padStart(5,"0")}`;}
+function ease(p,e){if(e==="easeIn")return p*p;if(e==="easeOut")return 1-(1-p)*(1-p);if(e==="easeInOut")return p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;return p;}
+function stateAt(t){let a=ordered();if(t<=a[0].t)return a[0];if(t>=a[a.length-1].t)return a[a.length-1];for(let i=0;i<a.length-1;i++){let x=a[i],z=a[i+1];if(t>=x.t&&t<=z.t){let p=(t-x.t)/(z.t-x.t||1);p=ease(p,x.e);return {y:x.y+(z.y-x.y)*p,s:x.s+(z.s-x.s)*p,o:x.o+(z.o-x.o)*p};}}return a[0];}
+function wrap(text,max){let out=[];for(let para of text.replace(/\r/g,"").split("\n")){if(!para){out.push("");continue;}let line="";for(let word of para.split(/\s+/)){let test=line?line+" "+word:word;if(ctx.measureText(test).width<=max){line=test;continue;}if(line)out.push(line);line="";for(let ch of Array.from(word)){if(line&&ctx.measureText(line+ch).width>max){out.push(line);line=ch;}else line+=ch;}}if(line)out.push(line);}return out;}
+function draw(updateUI=true){
+ const w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.fillStyle=$("bg").value;ctx.fillRect(0,0,w,h);
+ if(bgImage){let r=bgImage.width/bgImage.height,cr=w/h,dw,dh,dx,dy;if(r>cr){dh=h;dw=h*r;dx=(w-dw)/2;dy=0;}else{dw=w;dh=w/r;dx=0;dy=(h-dh)/2;}ctx.drawImage(bgImage,dx,dy,dw,dh);let d=+$("dim").value;if(d){ctx.fillStyle=`rgba(0,0,0,${d})`;ctx.fillRect(0,0,w,h);}}
+ const st=stateAt(time),size=+$("fontSize").value,lh=size*(+$("lineHeight").value),font=$("font").value;
+ ctx.save();ctx.globalAlpha=clamp(st.o,0,1);ctx.translate(w/2,st.y/100*h);ctx.scale(st.s,st.s);ctx.font=`600 ${size}px ${font}`;ctx.fillStyle=$("color").value;ctx.textAlign=$("align").value;ctx.textBaseline="top";
+ if($("shadow").value==="yes"){ctx.shadowColor="#000";ctx.shadowBlur=8;ctx.shadowOffsetX=2;ctx.shadowOffsetY=2;}
+ let max=w*.84,lines=wrap($("textInput").value,max),x=$("align").value==="left"?-max/2:$("align").value==="right"?max/2:0;
+ lines.forEach((line,i)=>ctx.fillText(line,x,i*lh,max));ctx.restore();
+ $("timeLabel").textContent=`${fmt(time)} / ${fmt(duration)}`;
+ $("y").value=st.y;$("scale").value=st.s;$("opacity").value=st.o;
+ $("yOut").textContent=`${Math.round(st.y)}%`;$("scaleOut").textContent=`${st.s.toFixed(2)}×`;$("opacityOut").textContent=st.o.toFixed(2);
+ $("fontSizeOut").textContent=size;$("lineOut").textContent=$("lineHeight").value;
+ if(updateUI) updateTimeline();
 }
-function ease(p,type){
-  if(type==="easeIn") return p*p;
-  if(type==="easeOut") return 1-(1-p)*(1-p);
-  if(type==="easeInOut") return p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
-  return p;
+function updateTimeline(){
+ $("playhead").style.left=`${time/duration*100}%`;$("markers").innerHTML="";
+ for(const f of ordered()){let b=document.createElement("button");b.type="button";b.className="marker"+(f.id===selected?" active":"");b.style.left=`${f.t/duration*100}%`;b.title=`${fmt(f.t)} keyframe · drag sideways to retime, down to delete`;b.setAttribute("aria-label",`Keyframe ${fmt(f.t)}`);
+ b.addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefault();stop();saveUndo();dragId=f.id;dragPointerId=e.pointerId;selected=f.id;dragDeleteReady=false;b.classList.add("drag");b.setPointerCapture(e.pointerId);$("dragDeleteHint").classList.add("show");$("kfInfo").textContent="Drag sideways to move this keyframe. Drag down to delete it.";});
+ b.addEventListener("pointermove",e=>{if(dragId===f.id&&dragPointerId===e.pointerId)moveMarker(e,b);});
+ b.addEventListener("pointerup",e=>{if(dragId!==f.id)return;finishMarkerDrag(e);});b.addEventListener("pointercancel",e=>{if(dragId===f.id)finishMarkerDrag(e,true);});
+ b.addEventListener("click",e=>{e.stopPropagation();if(dragId!==null)return;selected=f.id;time=f.t;render();});$("markers").appendChild(b);}
+ let k=selectedFrame();$("deleteBtn").disabled=frames.length<=1||!k;
+ $("kfInfo").textContent=`${autoKey?"Auto Key ON":"Auto Key OFF"} · ${k?"Selected keyframe at "+fmt(k.t):"No selected keyframe"} · ${frames.length} keyframes`;
+ $("easing").value=k?.e||"linear";
+ $("autoBtn").classList.toggle("active",autoKey);
 }
-function getState(t){
-  const frames=sortedFrames();
-  if(!frames.length) return {y:75,scale:1,opacity:1};
-  if(t<=frames[0].time) return {...frames[0]};
-  if(t>=frames[frames.length-1].time) return {...frames[frames.length-1]};
-  for(let i=0;i<frames.length-1;i++){
-    const a=frames[i],b=frames[i+1];
-    if(t>=a.time && t<=b.time){
-      const span=b.time-a.time;
-      const p=span<=0?0:clamp((t-a.time)/span,0,1);
-      const q=ease(p,a.easing || "linear");
-      return {
-        y:a.y+(b.y-a.y)*q,
-        scale:a.scale+(b.scale-a.scale)*q,
-        opacity:a.opacity+(b.opacity-a.opacity)*q
-      };
-    }
-  }
-  return {...frames[0]};
+function moveMarker(e,marker){let r=$("track").getBoundingClientRect(),f=frames.find(x=>x.id===dragId);if(!f)return;
+ // Horizontal drag changes keyframe time. A downward drag beyond the track arms VN-style delete.
+ let p=clamp((e.clientX-r.left)/r.width,0,1);f.t=+(p*duration).toFixed(2);time=f.t;selected=f.id;
+ dragDeleteReady=e.clientY>r.bottom+18;
+ $("dragDeleteHint").classList.toggle("ready",dragDeleteReady);
+ $("playhead").style.left=`${p*100}%`;marker.style.left=`${p*100}%`;
+ draw(false);
 }
-function wrapText(text,maxWidth){
-  const lines=[];
-  const paragraphs=String(text).replace(/\r/g,"").split("\n");
-  for(const paragraph of paragraphs){
-    if(paragraph===""){lines.push("");continue;}
-    const words=paragraph.split(/\s+/);
-    let line="";
-    for(const word of words){
-      const candidate=line ? line+" "+word : word;
-      if(ctx.measureText(candidate).width<=maxWidth || !line){
-        if(ctx.measureText(candidate).width<=maxWidth){line=candidate;continue;}
-        // Split a single long word by Unicode code points (works for Bengali too).
-        let part="";
-        for(const ch of Array.from(word)){
-          if(part && ctx.measureText(part+ch).width>maxWidth){lines.push(part);part=ch;}
-          else part+=ch;
-        }
-        line=part;
-      }else{lines.push(line);line=word;}
-    }
-    if(line) lines.push(line);
-  }
-  return lines;
+function finishMarkerDrag(e,cancelled=false){
+ const id=dragId;const shouldDelete=!cancelled&&dragDeleteReady;dragId=null;dragPointerId=null;dragDeleteReady=false;
+ $("dragDeleteHint").classList.remove("show","ready");
+ if(shouldDelete&&frames.length>1){frames=frames.filter(f=>f.id!==id);let nearest=ordered().reduce((a,b)=>Math.abs(b.t-time)<Math.abs(a.t-time)?b:a);selected=nearest.id;time=nearest.t;$("status").textContent="Keyframe deleted";}
+ render();
 }
-function drawBackground(w,h){
-  ctx.fillStyle=$("bgColor").value;
-  ctx.fillRect(0,0,w,h);
-  if(bgImage){
-    const ir=bgImage.width/bgImage.height, cr=w/h;
-    let dw,dh,dx,dy;
-    if(ir>cr){dh=h;dw=h*ir;dx=(w-dw)/2;dy=0;}
-    else{dw=w;dh=w/ir;dx=0;dy=(h-dh)/2;}
-    ctx.drawImage(bgImage,dx,dy,dw,dh);
-  }
-  const dim=Number($("bgDim").value);
-  if(dim>0){ctx.fillStyle=`rgba(0,0,0,${dim})`;ctx.fillRect(0,0,w,h);}
+function addKey(){saveUndo();let f=frames.find(x=>Math.abs(x.t-time)<.025);let st=stateAt(time);if(!f){f={id:nextId++,t:+time.toFixed(2),y:st.y,s:st.s,o:st.o,e:"linear"};frames.push(f);}selected=f.id;render();}
+function deleteKey(){if(frames.length<=1)return;let f=selectedFrame();if(!f)return;saveUndo();frames=frames.filter(x=>x.id!==f.id);let near=ordered().reduce((a,b)=>Math.abs(b.t-time)<Math.abs(a.t-time)?b:a);selected=near.id;time=near.t;render();}
+function propertyChange(){saveUndo();let v={y:+$("y").value,s:+$("scale").value,o:+$("opacity").value};let f=frames.find(x=>Math.abs(x.t-time)<.025);if(!f){if(autoKey){f={id:nextId++,t:+time.toFixed(2),...v,e:"linear"};frames.push(f);selected=f.id;}else{let st=stateAt(time);let first=ordered()[0];Object.assign(first,v);}}else{Object.assign(f,v);selected=f.id;}draw();updateTimeline();}
+function stop(){playing=false;if(raf)cancelAnimationFrame(raf);raf=0;$("playBtn").textContent="▶ Play";}
+function loop(now){if(!playing)return;time+=Math.min((now-last)/1000,.1);last=now;if(time>=duration){time=duration;draw();stop();return;}draw();raf=requestAnimationFrame(loop);}
+function play(){if(playing){stop();return;}if(time>=duration)time=0;playing=true;$("playBtn").textContent="Ⅱ Pause";last=performance.now();raf=requestAnimationFrame(loop);}
+function setDuration(){let d=clamp(+$("duration").value||3,1,300);saveUndo();let old=duration;duration=d;$("duration").value=d;frames.forEach(f=>{if(f.t>duration)f.t=duration;});time=clamp(time,0,duration);render();}
+function ratio(w,h){canvas.width=w;canvas.height=h;render();}
+$("playBtn").onclick=play;$("startBtn").onclick=()=>{stop();time=0;selected=ordered()[0].id;render();};$("endBtn").onclick=()=>{stop();time=duration;selected=ordered().at(-1).id;render();};
+$("addBtn").onclick=addKey;$("deleteBtn").onclick=deleteKey;$("autoBtn").onclick=()=>{autoKey=!autoKey;updateTimeline();};
+$("curveBtn").onclick=()=>{let f=selectedFrame();if(!f)return;saveUndo();let opts=["linear","easeIn","easeOut","easeInOut"],i=opts.indexOf(f.e);f.e=opts[(i+1)%opts.length];render();};
+$("duplicateBtn").onclick=()=>{let f=selectedFrame();if(!f)return;saveUndo();let n={...f,id:nextId++,t:Math.min(duration,+(f.t+.25).toFixed(2))};frames.push(n);selected=n.id;time=n.t;render();};
+$("editBtn").onclick=()=>{$("textInput").focus();$("status").textContent="Edit text in the Text panel";};
+$("easing").onchange=()=>{let f=selectedFrame();if(f){saveUndo();f.e=$("easing").value;render();}};
+["y","scale","opacity"].forEach(id=>$(id).addEventListener("input",propertyChange));
+["textInput","font","fontSize","lineHeight","color","align","shadow","bg","dim"].forEach(id=>$(id).addEventListener("input",draw));
+$("shortsBtn").onclick=()=>ratio(720,1280);$("wideBtn").onclick=()=>ratio(1280,720);$("duration").onchange=setDuration;
+$("track").addEventListener("pointerdown",e=>{if(e.target.classList.contains("marker"))return;stop();let r=$("track").getBoundingClientRect();time=clamp((e.clientX-r.left)/r.width,0,1)*duration;let f=frames.find(x=>Math.abs(x.t-time)<.025);if(f)selected=f.id;render();});
+$("imageInput").onchange=e=>{let file=e.target.files?.[0];if(!file)return;let url=URL.createObjectURL(file),im=new Image();im.onload=()=>{bgImage=im;URL.revokeObjectURL(url);draw();};im.onerror=()=>{URL.revokeObjectURL(url);$("status").textContent="Could not load image";};im.src=url;};
+$("removeImage").onclick=()=>{bgImage=null;$("imageInput").value="";draw();};
+$("undoBtn").onclick=()=>{if(!undoStack.length)return;redoStack.push(snapshot());restore(undoStack.pop());updateUndoButtons();};
+$("redoBtn").onclick=()=>{if(!redoStack.length)return;undoStack.push(snapshot());restore(redoStack.pop());updateUndoButtons();};
+function mime(){return ["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"].find(x=>window.MediaRecorder&&MediaRecorder.isTypeSupported(x))||"";}
+async function exportVideo(){
+ if(recording)return;
+ if(!canvas.captureStream||!window.MediaRecorder){$("status").textContent="Video recording unsupported here. Open in Chrome.";return;}
+ stop();recording=true;$("exportBtn").disabled=true;$("status").textContent="Preparing export…";
+ try{
+  if(document.fonts?.ready)await document.fonts.ready;
+  time=0;draw();
+  const stream=canvas.captureStream(30),type=mime(),opts=type?{mimeType:type}:undefined;
+  let rec;try{rec=new MediaRecorder(stream,opts);}catch(err){stream.getTracks().forEach(t=>t.stop());throw err;}
+  let chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+  const stopped=new Promise((resolve,reject)=>{rec.onstop=resolve;rec.onerror=e=>reject(e.error||new Error("Recording failed"));});
+  rec.start(200);let start=performance.now();
+  await new Promise(resolve=>{
+   function step(now){time=Math.min((now-start)/1000,duration);draw();$("status").textContent=`Exporting ${Math.round(time/duration*100)}%`;if(time<duration)requestAnimationFrame(step);else setTimeout(resolve,300);}
+   requestAnimationFrame(step);
+  });
+  if(rec.state!=="inactive")rec.stop();await stopped;stream.getTracks().forEach(t=>t.stop());
+  const blob=new Blob(chunks,{type:rec.mimeType||"video/webm"});if(!blob.size)throw new Error("Empty video file");
+  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="VN-text-animation.webm";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  $("status").textContent="Export complete ✓";
+ }catch(err){console.error(err);$("status").textContent="Export error: "+(err.message||"unsupported browser");}
+ finally{recording=false;$("exportBtn").disabled=false;draw();}
 }
-function render(){
-  const w=canvas.width,h=canvas.height;
-  drawBackground(w,h);
-  const state=getState(currentTime);
-  $("posYSlider").value=state.y;
-  $("scaleSlider").value=state.scale;
-  $("opacitySlider").value=state.opacity;
-  $("yValText").textContent=`${Math.round(state.y)}%`;
-  $("scaleValText").textContent=`${Number(state.scale).toFixed(2)}×`;
-  $("opValText").textContent=Number(state.opacity).toFixed(2);
-  $("fontSizeVal").textContent=`${$("fontSize").value} px`;
-  $("lineHeightVal").textContent=`${$("lineHeight").value}×`;
-
-  const text=$("scriptText").value;
-  const fontSize=Number($("fontSize").value);
-  const lineHeight=fontSize*Number($("lineHeight").value);
-  const fontFamily=$("fontFamily").value;
-  ctx.save();
-  ctx.globalAlpha=clamp(Number(state.opacity),0,1);
-  ctx.translate(w/2,(Number(state.y)/100)*h);
-  ctx.scale(Number(state.scale),Number(state.scale));
-  ctx.font=`600 ${fontSize}px ${fontFamily}`;
-  ctx.fillStyle=$("textColor").value;
-  ctx.textAlign=$("textAlign").value;
-  ctx.textBaseline="top";
-  if($("textShadow").value==="true"){
-    ctx.shadowColor="rgba(0,0,0,.85)";ctx.shadowBlur=10;ctx.shadowOffsetX=2;ctx.shadowOffsetY=3;
-  }else{ctx.shadowColor="transparent";ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;}
-  const maxWidth=w*.84;
-  const lines=wrapText(text,maxWidth);
-  const x=$("textAlign").value==="left" ? -maxWidth/2 : $("textAlign").value==="right" ? maxWidth/2 : 0;
-  lines.forEach((line,i)=>ctx.fillText(line,x,i*lineHeight,maxWidth));
-  ctx.restore();
-  updateTimelineUI();
-}
-function updateSelectedInfo(){
-  const k=selectedFrame();
-  if(!k){$("kfInfo").textContent="No keyframe selected";return;}
-  $("kfInfo").textContent=`Selected: ${formatTime(k.time)}  •  Y ${Math.round(k.y)}%  •  Scale ${k.scale.toFixed(2)}×  •  Opacity ${k.opacity.toFixed(2)}`;
-  $("easingSelect").value=k.easing || "linear";
-}
-function selectKeyframe(id){
-  const k=keyframes.find(x=>x.id===id);
-  if(!k)return;
-  selectedKeyframeId=id;
-  currentTime=k.time;
-  updateSelectedInfo();
-  render();
-}
-function updateTimelineUI(){
-  const percent=duration>0?currentTime/duration*100:0;
-  $("playhead").style.left=`${clamp(percent,0,100)}%`;
-  $("timeDisplay").textContent=`${formatTime(currentTime)} / ${formatTime(duration)}`;
-  const container=$("keyframeMarkers");
-  container.innerHTML="";
-  for(const k of sortedFrames()){
-    if(k.time>duration)continue;
-    const marker=document.createElement("button");
-    marker.type="button";
-    marker.className="kf-marker"+(k.id===selectedKeyframeId?" active":"");
-    marker.style.left=`${(k.time/duration)*100}%`;
-    marker.title=`${formatTime(k.time)} • Y ${Math.round(k.y)}%`;
-    marker.setAttribute("aria-label",`Keyframe at ${formatTime(k.time)}`);
-    marker.addEventListener("pointerdown",e=>{
-      e.stopPropagation();
-      draggingKeyframe=k.id;
-      marker.classList.add("dragging");
-      marker.setPointerCapture(e.pointerId);
-      selectKeyframe(k.id);
-    });
-    marker.addEventListener("pointermove",e=>{
-      if(draggingKeyframe!==k.id)return;
-      const rect=track.getBoundingClientRect();
-      const p=clamp((e.clientX-rect.left)/rect.width,0,1);
-      k.time=Number((p*duration).toFixed(2));
-      currentTime=k.time;
-      updateTimelineUI();updateSelectedInfo();render();
-    });
-    marker.addEventListener("pointerup",()=>{draggingKeyframe=null;});
-    marker.addEventListener("pointercancel",()=>{draggingKeyframe=null;});
-    marker.addEventListener("click",e=>{e.stopPropagation();selectKeyframe(k.id);});
-    container.appendChild(marker);
-  }
-  $("delKfBtn").disabled=keyframes.length<=1 || !selectedFrame();
-  updateSelectedInfo();
-}
-function setControlsFromState(state){
-  $("posYSlider").value=state.y;
-  $("scaleSlider").value=state.scale;
-  $("opacitySlider").value=state.opacity;
-}
-function addOrUpdateKeyframe(){
-  const values={
-    y:Number($("posYSlider").value),
-    scale:Number($("scaleSlider").value),
-    opacity:Number($("opacitySlider").value)
-  };
-  let k=keyframes.find(x=>Math.abs(x.time-currentTime)<.025);
-  if(k){
-    Object.assign(k,values);
-    selectedKeyframeId=k.id;
-  }else{
-    k={id:nextKeyframeId++,time:Number(currentTime.toFixed(2)),...values,easing:"linear"};
-    keyframes.push(k);
-    selectedKeyframeId=k.id;
-  }
-  render();
-}
-function deleteKeyframe(){
-  const k=selectedFrame();
-  if(!k || keyframes.length<=1)return;
-  keyframes=keyframes.filter(x=>x.id!==k.id);
-  const nearest=sortedFrames().reduce((best,x)=>Math.abs(x.time-currentTime)<Math.abs(best.time-currentTime)?x:best);
-  selectedKeyframeId=nearest.id;
-  currentTime=nearest.time;
-  render();
-}
-function updateTransformFromSlider(){
-  const vals={y:Number($("posYSlider").value),scale:Number($("scaleSlider").value),opacity:Number($("opacitySlider").value)};
-  const k=selectedFrame();
-  if(k && Math.abs(k.time-currentTime)<.03) Object.assign(k,vals);
-  else{
-    // Editing at a time between keyframes creates/updates a keyframe, like an editor's auto-key option.
-    let atTime=keyframes.find(x=>Math.abs(x.time-currentTime)<.025);
-    if(!atTime){atTime={id:nextKeyframeId++,time:Number(currentTime.toFixed(2)),...vals,easing:"linear"};keyframes.push(atTime);selectedKeyframeId=atTime.id;}
-    else Object.assign(atTime,vals);
-  }
-  render();
-}
-function setAspectRatio(w,h){canvas.width=w;canvas.height=h;render();}
-function scrub(clientX){
-  const rect=track.getBoundingClientRect();
-  currentTime=clamp((clientX-rect.left)/rect.width,0,1)*duration;
-  const exact=keyframes.find(k=>Math.abs(k.time-currentTime)<.025);
-  if(exact)selectedKeyframeId=exact.id;
-  render();
-}
-function stopPlayback(){isPlaying=false;if(animationId)cancelAnimationFrame(animationId);animationId=null;$("playPauseBtn").textContent="▶ Play";}
-function togglePlay(){
-  if(isPlaying){stopPlayback();return;}
-  if(currentTime>=duration)currentTime=0;
-  isPlaying=true;$("playPauseBtn").textContent="⏸ Pause";
-  lastFrameTime=performance.now();
-  animationId=requestAnimationFrame(playLoop);
-}
-function playLoop(now){
-  if(!isPlaying)return;
-  const dt=Math.min((now-lastFrameTime)/1000,.1);lastFrameTime=now;
-  currentTime+=dt;
-  if(currentTime>=duration){currentTime=duration;render();stopPlayback();return;}
-  render();animationId=requestAnimationFrame(playLoop);
-}
-function buildRuler(){
-  const r=$("ruler");r.innerHTML="";
-  const steps=duration<=10?5:duration<=30?6:10;
-  for(let i=0;i<=steps;i++){
-    const s=document.createElement("span");s.textContent=formatTime(duration*i/steps);
-    s.style.left=`${i/steps*100}%`;r.appendChild(s);
-  }
-}
-function setDuration(){
-  const n=Number($("durationInput").value);
-  if(!Number.isFinite(n))return;
-  duration=clamp(n,1,600);
-  $("durationInput").value=duration;
-  // Keep keyframes inside the new clip duration; preserve their relative positions.
-  keyframes.forEach(k=>k.time=clamp(k.time,0,duration));
-  currentTime=clamp(currentTime,0,duration);
-  buildRuler();render();
-}
-
-$("playPauseBtn").addEventListener("click",togglePlay);
-$("toStartBtn").addEventListener("click",()=>{stopPlayback();currentTime=0;const first=sortedFrames()[0];if(first)selectedKeyframeId=first.id;render();});
-$("addKfBtn").addEventListener("click",addOrUpdateKeyframe);
-$("delKfBtn").addEventListener("click",deleteKeyframe);
-$("ratio169").addEventListener("click",()=>setAspectRatio(1280,720));
-$("ratio916").addEventListener("click",()=>setAspectRatio(720,1280));
-$("durationInput").addEventListener("change",setDuration);
-["scriptText","fontFamily","fontSize","lineHeight","textColor","textShadow","textAlign","bgColor","bgDim"].forEach(id=>$(id).addEventListener("input",render));
-["posYSlider","scaleSlider","opacitySlider"].forEach(id=>$(id).addEventListener("input",updateTransformFromSlider));
-$("easingSelect").addEventListener("change",()=>{const k=selectedFrame();if(k){k.easing=$("easingSelect").value;render();}});
-$("bgImageInput").addEventListener("change",e=>{
-  const file=e.target.files&&e.target.files[0];if(!file)return;
-  if(!file.type.startsWith("image/")){alert("Please choose an image file.");return;}
-  const url=URL.createObjectURL(file),img=new Image();
-  img.onload=()=>{bgImage=img;URL.revokeObjectURL(url);render();};
-  img.onerror=()=>{URL.revokeObjectURL(url);alert("Could not load this image.");};
-  img.src=url;
-});
-$("removeBgBtn").addEventListener("click",()=>{bgImage=null;$("bgImageInput").value="";render();});
-track.addEventListener("pointerdown",e=>{
-  if(e.target.classList.contains("kf-marker"))return;
-  stopPlayback();isScrubbing=true;track.setPointerCapture(e.pointerId);scrub(e.clientX);
-});
-track.addEventListener("pointermove",e=>{if(isScrubbing)scrub(e.clientX);});
-track.addEventListener("pointerup",()=>{isScrubbing=false;});
-track.addEventListener("pointercancel",()=>{isScrubbing=false;});
-
-function chooseMimeType(){
-  const types=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];
-  return types.find(t=>window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || "";
-}
-function exportVideo(){
-  if(exporting)return;
-  if(!canvas.captureStream || !window.MediaRecorder){
-    alert("Video export is not supported in this browser. Please try the latest Chrome or Edge.");
-    return;
-  }
-  const mimeType=chooseMimeType();
-  if(!mimeType && !MediaRecorder.isTypeSupported("video/webm")){
-    alert("This browser does not support WebM recording. Please use the latest Chrome or Edge.");
-    return;
-  }
-  stopPlayback();
-  currentTime=0;render();
-  exportStream=canvas.captureStream(30);
-  try{exportRecorder=new MediaRecorder(exportStream,mimeType?{mimeType}:{});}
-  catch(err){exportStream.getTracks().forEach(t=>t.stop());alert("Could not start video recording: "+err.message);return;}
-  exportChunks=[];exporting=true;
-  $("exportBtn").disabled=true;$("exportStatus").textContent="Rendering video…";
-  const startedAt=performance.now();
-  exportRecorder.ondataavailable=e=>{if(e.data&&e.data.size)exportChunks.push(e.data);};
-  exportRecorder.onerror=e=>{
-    exporting=false;$("exportBtn").disabled=false;$("exportStatus").textContent="Export failed";
-    if(exportStream)exportStream.getTracks().forEach(t=>t.stop());
-    console.error(e);
-  };
-  exportRecorder.onstop=()=>{
-    const blob=new Blob(exportChunks,{type:exportRecorder.mimeType||"video/webm"});
-    const url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;a.download="text-animation-video.webm";document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),60000);
-    if(exportStream)exportStream.getTracks().forEach(t=>t.stop());
-    exporting=false;$("exportBtn").disabled=false;$("exportStatus").textContent="✓ Export complete";
-    setTimeout(()=>$("exportStatus").textContent="",5000);
-  };
-  exportRecorder.start(250);
-  function frame(now){
-    if(!exporting)return;
-    currentTime=Math.min((now-startedAt)/1000,duration);
-    render();
-    $("exportStatus").textContent=`Rendering ${Math.min(100,Math.round(currentTime/duration*100))}%`;
-    if(currentTime<duration)requestAnimationFrame(frame);
-    else{
-      // Hold the final frame briefly so the recorder captures it.
-      setTimeout(()=>{if(exportRecorder&&exportRecorder.state!=="inactive")exportRecorder.stop();},250);
-    }
-  }
-  requestAnimationFrame(frame);
-}
-$("exportBtn").addEventListener("click",exportVideo);
-
-buildRuler();
-render();
+$("exportBtn").onclick=exportVideo;
+function init(){buildRuler();render();updateUndoButtons();if(document.fonts?.ready)document.fonts.ready.then(draw).catch(()=>{});}
+function buildRuler(){let r=$("ruler");r.innerHTML="";for(let i=0;i<=6;i++){let s=document.createElement("span");s.textContent=fmt(duration*i/6);s.style.left=(i/6*100)+"%";r.appendChild(s);}}
+init();
 })();
 </script>
 </body>
